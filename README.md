@@ -52,8 +52,10 @@ Five on-chain components plus an off-chain attester service:
    the encrypted issuer-wide aggregate-cap check, conditionally updates
    the encrypted aggregate via `FHE.select`, and triggers async public
    decryption of the final eligibility bit.
-5. **MockRWAToken** — demo asset whose `gatedTransfer(to, amount, checkId)`
-   requires a finalized, eligible, unconsumed, parameter-matched check.
+5. **MockRWAToken** — demo asset whose `gatedTransfer(address to, uint64 amount, bytes32 checkId)`
+   requires a finalized, eligible, unconsumed, parameter-matched check. Width is
+   `uint64` to match the `euint64` aggregate; widening to `uint256` would silently
+   truncate against the encrypted aggregate.
 
 Off-chain:
 
@@ -99,6 +101,27 @@ Production deployments are expected to pair AttestRail with:
 These mitigations are documented in the architecture rather than enforced
 in the Builder MVP. The pitch and demo do not claim full privacy under
 sustained observation.
+
+### Reserved-Exposure Semantics
+
+The encrypted issuer aggregate (`totalActiveExposure`) tracks **reserved**
+exposure — transfer amounts committed at eligibility-check time — not
+**executed** exposure. The aggregate increments inside
+`createEligibilityCheck` via `FHE.select`, before public decryption
+resolves and well before any `gatedTransfer` runs. A user who passes
+eligibility but abandons the flow leaves the aggregate inflated.
+
+We treat this as a confidential commitment line, analogous to a regulated
+bank's reserved credit line. Release-on-non-execution is post-MVP; for
+the Builder MVP the aggregate accumulates monotonically per policy.
+
+Under sustained DoS (an adversary creating eligibility checks they never
+finalize), the aggregate eventually exceeds the cap and legitimate
+transfers are blocked. The failure mode is one-sided — false negatives
+(legitimate users blocked) rather than false positives (over-cap
+transfers approved). This is the correct safety property for a
+compliance primitive: refusing too much is recoverable, approving too
+much is not.
 
 ## Planned Repository Layout
 
