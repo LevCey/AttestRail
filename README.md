@@ -5,9 +5,9 @@ Confidential compliance attestations for institutional onchain finance.
 AttestRail is a privacy-preserving compliance layer that lets RWA platforms,
 stablecoin issuers, and regulated DeFi applications enforce eligibility,
 risk, and exposure rules over encrypted state. Per-user compliance
-attributes, issuer policy thresholds, and an issuer-wide aggregate
-exposure counter all stay encrypted. Only the final eligibility decision is
-revealed.
+attributes, issuer policy thresholds, and an issuer-wide *reserved*
+exposure aggregate (committed at eligibility-check time) all stay
+encrypted. Only the final eligibility decision is revealed.
 
 Built on [Zama FHEVM](https://github.com/zama-ai/fhevm-hardhat-template).
 
@@ -15,9 +15,20 @@ Built on [Zama FHEVM](https://github.com/zama-ai/fhevm-hardhat-template).
 
 Early development. The Builder Track MVP — *Private RWA Eligibility Gate* —
 is in planning. Contracts, tests, mock attester service, and frontend demo
-are not yet committed. Architecture, scope, and Zama-specific technical
-verification documents are maintained alongside this repository in the
-LeventLabs Zama project workspace.
+are not yet committed.
+
+The first work item is Phase 0: two technical spikes that lock down the
+two integration assumptions on which the entire architecture depends —
+the exact async public-decryption API surface in the current Zama
+template, and the byte-level equality between off-chain and on-chain
+handle-digest computation for EIP-712 verification. Production contracts
+will not be written until both spike outputs are recorded in
+`docs/architecture.md`. This is intentional: cheap to verify now,
+expensive to discover wrong in week three of contract work.
+
+Architecture, scope, and Zama-specific technical verification documents
+are maintained alongside this repository in the LeventLabs Zama project
+workspace and will be folded into `docs/` as the project lands.
 
 ## Why FHE, Not ZK
 
@@ -28,9 +39,11 @@ participant ever holds in cleartext.
   attester, not by the user.
 - Issuer policy thresholds (per-user exposure ceiling, issuer-wide
   aggregate cap) are encrypted commercial signal.
-- An encrypted issuer-wide aggregate of approved exposure updates on every
-  check via `FHE.select`, with no public branch and no participant ever
-  seeing the cleartext.
+- An encrypted issuer-wide aggregate of *reserved* exposure (committed at
+  eligibility-check time, not at transfer execution) updates on every check
+  via `FHE.select`, with no public branch and no participant ever seeing
+  the cleartext. See "Reserved-Exposure Semantics" below for what the
+  reservation means in practice.
 
 ZK-shielded approaches cannot maintain that aggregate — there is no prover
 who knows the value to prove anything about it. FHE evaluates the cap
@@ -51,7 +64,11 @@ Five on-chain components plus an off-chain attester service:
 4. **PrivateEligibilityGate** — runs encrypted per-user policy checks and
    the encrypted issuer-wide aggregate-cap check, conditionally updates
    the encrypted aggregate via `FHE.select`, and triggers async public
-   decryption of the final eligibility bit.
+   decryption of the final eligibility bit. Each `Check` record binds
+   `(user, policyId, to, amount)` at creation time so `gatedTransfer` can
+   verify them at consumption. The issuer aggregate is **lazy-initialized**
+   on the first check for each policy via `policyContract.getIssuer(policyId)`
+   — no deploy-time coupling between `AttestRailPolicy` and the gate.
 5. **MockRWAToken** — demo asset whose `gatedTransfer(address to, uint64 amount, bytes32 checkId)`
    requires a finalized, eligible, unconsumed, parameter-matched check. Width is
    `uint64` to match the `euint64` aggregate; widening to `uint256` would silently
@@ -126,6 +143,9 @@ much is not.
 ## Planned Repository Layout
 
 ```
+spike/                         # Phase 0 — throwaway code, kept for the record
+  decryption/                  #   S1: async public decryption end-to-end
+  digest-fixture/              #   S2: handle-digest equality fixture
 contracts/
   AttesterRegistry.sol
   AttestRailRegistry.sol
@@ -137,42 +157,68 @@ test/
   AttestRailRegistry.test.ts
   PrivateEligibilityGate.test.ts
   MockRWAToken.test.ts
+scripts/
+  deploy.ts                    # Idempotent: deploy + post-deploy admin ops
+  seed.ts                      # Default policy + mock token mint + optional aggregate prepop
+  measure-latency.ts           # Sepolia public-decryption latency profile
 attester/
   encrypt.ts
   sign.ts
-app/
+app/                           # Vite + React + TypeScript dApp
   src/
 docs/
-  architecture.md
+  architecture.md              # Phase 0 outputs, latency numbers, design decisions
   demo-flow.md
   pitch.md
+deployments/
+  sepolia/addresses.json       # Written by scripts/deploy.ts
 ```
 
 ## Getting Started
 
-The project will be scaffolded from the official Zama FHEVM Hardhat
-template. Until contracts land, the commands below describe the intended
-workflow.
+The intended order of work is:
+
+1. **Phase 0 spikes** in `spike/`. Run S1 (async public decryption) and S2
+   (handle-digest equality) against Sepolia. Record the chosen decryption
+   pattern, observed latency range, and the exact handle-packing format
+   in `docs/architecture.md`. Do not skip this step — the contract
+   surface depends on these decisions.
+2. **Scaffold** the main project from the official Zama FHEVM Hardhat
+   template, pinning the cloned commit hash in `docs/architecture.md`.
+3. **Implement** the five contracts plus the mock attester service.
+4. **Deploy and seed** via the idempotent scripts (see below).
+5. **Measure** Sepolia decryption latency and update the README status
+   line.
+
+Day-to-day development:
 
 ```bash
 npm install
 npx hardhat test --network hardhat
-npx hardhat node
+npx hardhat node                            # in a separate shell
 npx hardhat test --network localhost
-npx hardhat deploy --network localhost
 ```
 
-For Sepolia:
+Deploy + post-deploy admin ops + seed (idempotent, single source of
+deployment truth):
 
 ```bash
-npx hardhat clean
-npx hardhat compile --network sepolia
-npx hardhat deploy --network sepolia
-npx hardhat fhevm check-fhevm-compatibility --network sepolia --address <contract>
+npx hardhat run scripts/deploy.ts --network sepolia
+npx hardhat run scripts/seed.ts --network sepolia
+npx hardhat fhevm check-fhevm-compatibility --network sepolia --address <each>
+```
+
+Decryption latency profile (writes results back into `docs/architecture.md`):
+
+```bash
+npx hardhat run scripts/measure-latency.ts --network sepolia
 ```
 
 A `.env.example` will be added with the variables required by the Zama
-template and the mock attester key. Do not commit private keys.
+template, the deployer key, the mock attester key, and the issuer
+address. Do not commit private keys. `deployments/sepolia/addresses.json`
+is the source of truth for the frontend dApp and the mock attester
+service.
 
 ## Roadmap
 
@@ -190,13 +236,31 @@ template and the mock attester key. Do not commit private keys.
 
 **Next**
 
+- Reserved-exposure release: cancellation, expiry-based release, and
+  rebalancing of the encrypted aggregate when an eligibility check is
+  not executed. Closes the DoS surface noted in the Reserved-Exposure
+  Semantics section.
 - Confidential transfer amounts (`externalEuint64`).
-- Inference-mitigation primitives (rate limits, batched finalization).
+- Inference-mitigation primitives (rate limits, batched finalization,
+  decoy checks).
 - Real attester integration (signed claims from a regulated provider).
-- Selective disclosure flows with explicit `FHE.allow` permissioning per
-  role.
+- Selective disclosure flows extended from admin-only (MVP) to per-role
+  authorization (issuer of an active policy, named compliance officers).
 
 ## References
+
+In-repo (populated as the project lands):
+
+- `docs/architecture.md` — Phase 0 spike outputs (decryption pattern,
+  handle-digest packing fixture), measured Sepolia latency, and pinned
+  template commit hash
+- `docs/demo-flow.md` — end-to-end demo walkthrough across the eligible,
+  blocked-by-sanctions, blocked-by-aggregate-cap, and replay-rejected
+  scenarios
+- `deployments/sepolia/addresses.json` — deployed contract addresses
+  (source of truth for the frontend dApp and mock attester service)
+
+External:
 
 - Zama FHEVM Hardhat Template — https://github.com/zama-ai/fhevm-hardhat-template
 - Zama Solidity guides — https://docs.zama.org/protocol/solidity-guides/getting-started/setup
