@@ -8,7 +8,10 @@ import {AttestRailRegistry} from "./AttestRailRegistry.sol";
 
 /// @title PrivateEligibilityGate — per-user + aggregate FHE eligibility check
 contract PrivateEligibilityGate is ZamaEthereumConfig {
-    enum Status { PendingDecryption, Decryptable }
+    enum Status {
+        PendingDecryption,
+        Decryptable
+    }
 
     struct Check {
         address user;
@@ -65,7 +68,16 @@ contract PrivateEligibilityGate is ZamaEthereumConfig {
         if (block.timestamp > registry.getAttestationExpiry(msg.sender)) revert AttestationExpired();
 
         // Read profile
-        (ebool kycVerified, ebool jurisdictionAllowed, ebool sanctionsFlag, euint8 riskTier, euint64 currentExposure, , , ) = registry.getProfile(msg.sender);
+        (
+            ebool kycVerified,
+            ebool jurisdictionAllowed,
+            ebool sanctionsFlag,
+            euint8 riskTier,
+            euint64 currentExposure,
+            ,
+            ,
+
+        ) = registry.getProfile(msg.sender);
 
         // Per-user eligibility computation
         ebool eligible = kycVerified;
@@ -136,10 +148,22 @@ contract PrivateEligibilityGate is ZamaEthereumConfig {
 
     // --- Views for MockRWAToken ---
 
-    function getCheck(bytes32 checkId) external view returns (
-        address user, uint256 policyId, address to, uint64 amount,
-        ebool encryptedEligible, Status status, bool consumed, bool exists
-    ) {
+    function getCheck(
+        bytes32 checkId
+    )
+        external
+        view
+        returns (
+            address user,
+            uint256 policyId,
+            address to,
+            uint64 amount,
+            ebool encryptedEligible,
+            Status status,
+            bool consumed,
+            bool exists
+        )
+    {
         Check storage c = checks[checkId];
         return (c.user, c.policyId, c.to, c.amount, c.encryptedEligible, c.status, c.consumed, c.exists);
     }

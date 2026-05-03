@@ -13,14 +13,15 @@ contract DigestSpike {
         externalEuint8 riskTier,
         externalEuint64 currentExposure
     ) external pure returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(
-                externalEbool.unwrap(kyc),
-                externalEbool.unwrap(jurisdiction),
-                externalEbool.unwrap(sanctions),
-                externalEuint8.unwrap(riskTier),
-                externalEuint64.unwrap(currentExposure)
-            )
-        );
+        return
+            keccak256(
+                abi.encodePacked(
+                    externalEbool.unwrap(kyc),
+                    externalEbool.unwrap(jurisdiction),
+                    externalEbool.unwrap(sanctions),
+                    externalEuint8.unwrap(riskTier),
+                    externalEuint64.unwrap(currentExposure)
+                )
+            );
     }
 }

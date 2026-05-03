@@ -97,14 +97,20 @@ contract AttestRailPolicy is ZamaEthereumConfig {
         emit PolicyActiveToggled(policyId, p.active);
     }
 
-    function getPolicyPublic(uint256 policyId) external view returns (
-        address issuer,
-        bool kycRequired,
-        bool jurisdictionRequired,
-        bool blockSanctioned,
-        uint8 maxRiskTier,
-        bool active
-    ) {
+    function getPolicyPublic(
+        uint256 policyId
+    )
+        external
+        view
+        returns (
+            address issuer,
+            bool kycRequired,
+            bool jurisdictionRequired,
+            bool blockSanctioned,
+            uint8 maxRiskTier,
+            bool active
+        )
+    {
         Policy storage p = policies[policyId];
         return (p.issuer, p.kycRequired, p.jurisdictionRequired, p.blockSanctioned, p.maxRiskTier, p.active);
     }

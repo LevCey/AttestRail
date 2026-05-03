@@ -1,9 +1,7 @@
 # Spike S1 — Findings: ebool + Public Decryption Pattern
 
-**Date:** 2026-05-01
-**Template:** fhevm-hardhat-template v0.4.1
-**Packages:** @fhevm/solidity ^0.11.1, @fhevm/hardhat-plugin ^0.4.2
-**Test result:** 5/5 passing (hardhat mock network)
+**Date:** 2026-05-01 **Template:** fhevm-hardhat-template v0.4.1 **Packages:** @fhevm/solidity ^0.11.1,
+@fhevm/hardhat-plugin ^0.4.2 **Test result:** 5/5 passing (hardhat mock network)
 
 ---
 
@@ -11,7 +9,8 @@
 
 The public decryption flow is **not** callback-based and **not** polling-based.
 
-**Solidity side:** The contract calls `FHE.makePubliclyDecryptable(handle)` which internally calls `ACL.allowForDecryption`. This is a single transaction — no oracle callback, no second finalize transaction.
+**Solidity side:** The contract calls `FHE.makePubliclyDecryptable(handle)` which internally calls
+`ACL.allowForDecryption`. This is a single transaction — no oracle callback, no second finalize transaction.
 
 **Client/test side:** After the `makePubliclyDecryptable` tx confirms, the caller reads the result via:
 
@@ -19,7 +18,8 @@ The public decryption flow is **not** callback-based and **not** polling-based.
 const result: boolean = await fhevm.publicDecryptEbool(handleBytes32);
 ```
 
-On Sepolia, the relayer SDK handles the KMS decryption round-trip. In mock mode (hardhat network), the mock instance resolves it immediately.
+On Sepolia, the relayer SDK handles the KMS decryption round-trip. In mock mode (hardhat network), the mock instance
+resolves it immediately.
 
 ### Implication for PrivateEligibilityGate
 
@@ -37,21 +37,21 @@ Steps 1–2 can happen in the same transaction.
 
 ### Solidity (contract side)
 
-| Function | Signature | Purpose |
-|---|---|---|
-| `FHE.asEbool(bool)` | `→ ebool` | Trivial encrypt a plaintext bool |
+| Function                                 | Signature | Purpose                               |
+| ---------------------------------------- | --------- | ------------------------------------- |
+| `FHE.asEbool(bool)`                      | `→ ebool` | Trivial encrypt a plaintext bool      |
 | `FHE.fromExternal(externalEbool, bytes)` | `→ ebool` | Verify + convert user-encrypted input |
-| `FHE.allowThis(ebool)` | `→ ebool` | Grant contract access to the handle |
-| `FHE.allow(ebool, address)` | `→ ebool` | Grant a specific address access |
-| `FHE.makePubliclyDecryptable(ebool)` | `→ ebool` | Mark handle for public decryption |
+| `FHE.allowThis(ebool)`                   | `→ ebool` | Grant contract access to the handle   |
+| `FHE.allow(ebool, address)`              | `→ ebool` | Grant a specific address access       |
+| `FHE.makePubliclyDecryptable(ebool)`     | `→ ebool` | Mark handle for public decryption     |
 
 ### TypeScript (test/client side)
 
-| Function | Signature | Purpose |
-|---|---|---|
-| `fhevm.createEncryptedInput(contract, user)` | `.addBool(v).encrypt()` | Encrypt a bool off-chain |
-| `fhevm.publicDecryptEbool(handle)` | `→ Promise<boolean>` | Read publicly decryptable ebool |
-| `fhevm.userDecryptEbool(handle, contract, signer)` | `→ Promise<boolean>` | Read user-allowed ebool |
+| Function                                           | Signature               | Purpose                         |
+| -------------------------------------------------- | ----------------------- | ------------------------------- |
+| `fhevm.createEncryptedInput(contract, user)`       | `.addBool(v).encrypt()` | Encrypt a bool off-chain        |
+| `fhevm.publicDecryptEbool(handle)`                 | `→ Promise<boolean>`    | Read publicly decryptable ebool |
+| `fhevm.userDecryptEbool(handle, contract, signer)` | `→ Promise<boolean>`    | Read user-allowed ebool         |
 
 ---
 
@@ -73,7 +73,8 @@ FHE.allowThis(handle)              ← required
 FHE.allow(handle, userAddress)     ← required: user must be explicitly allowed
 ```
 
-**Confirmed by test:** `userDecryptEbool` fails with "not authorized" when `FHE.allow` is missing, while `publicDecryptEbool` succeeds with only `allowThis` + `makePubliclyDecryptable`.
+**Confirmed by test:** `userDecryptEbool` fails with "not authorized" when `FHE.allow` is missing, while
+`publicDecryptEbool` succeeds with only `allowThis` + `makePubliclyDecryptable`.
 
 ---
 
@@ -94,7 +95,8 @@ FHE.allow(handle, userAddress)     ← required: user must be explicitly allowed
 - The contract code is identical; only the test harness differs
 - The existing `FHECounterSepolia.ts` test in the template shows the Sepolia pattern
 
-**Risk:** The mock may not perfectly replicate Sepolia ACL enforcement. Recommend running on Sepolia before finalizing the gate contract.
+**Risk:** The mock may not perfectly replicate Sepolia ACL enforcement. Recommend running on Sepolia before finalizing
+the gate contract.
 
 ---
 
@@ -138,4 +140,5 @@ const isEligible: boolean = await fhevm.publicDecryptEbool(handle);
 ## 7. Files Created
 
 - `contracts/EboolDecryptSpike.sol` — spike contract
-- `test/EboolDecryptSpike.ts` — 5 passing tests covering trivial encrypt, encrypted input, public decrypt, and ACL difference
+- `test/EboolDecryptSpike.ts` — 5 passing tests covering trivial encrypt, encrypted input, public decrypt, and ACL
+  difference

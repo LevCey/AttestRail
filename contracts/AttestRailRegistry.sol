@@ -86,7 +86,13 @@ contract AttestRailRegistry is ZamaEthereumConfig, EIP712("AttestRail", "1") {
 
         // 4. Recover signer via EIP-712 and verify approved
         bytes32 structHash = keccak256(
-            abi.encode(ATTESTATION_TYPEHASH, attestation.user, attestation.handlesDigest, attestation.expiry, attestation.nonce)
+            abi.encode(
+                ATTESTATION_TYPEHASH,
+                attestation.user,
+                attestation.handlesDigest,
+                attestation.expiry,
+                attestation.nonce
+            )
         );
         address signer = ECDSA.recover(_hashTypedDataV4(structHash), attesterSignature);
         if (!attesterRegistry.isApproved(signer)) revert AttesterNotApproved();
@@ -129,18 +135,33 @@ contract AttestRailRegistry is ZamaEthereumConfig, EIP712("AttestRail", "1") {
         emit ProfileSubmitted(msg.sender, signer, attestation.expiry);
     }
 
-    function getProfile(address user) external view returns (
-        ebool kycVerified,
-        ebool jurisdictionAllowed,
-        ebool sanctionsFlag,
-        euint8 riskTier,
-        euint64 currentExposure,
-        address attester,
-        uint64 attestationExpiry,
-        bool exists
-    ) {
+    function getProfile(
+        address user
+    )
+        external
+        view
+        returns (
+            ebool kycVerified,
+            ebool jurisdictionAllowed,
+            ebool sanctionsFlag,
+            euint8 riskTier,
+            euint64 currentExposure,
+            address attester,
+            uint64 attestationExpiry,
+            bool exists
+        )
+    {
         EncryptedProfile storage p = profiles[user];
-        return (p.kycVerified, p.jurisdictionAllowed, p.sanctionsFlag, p.riskTier, p.currentExposure, p.attester, p.attestationExpiry, p.exists);
+        return (
+            p.kycVerified,
+            p.jurisdictionAllowed,
+            p.sanctionsFlag,
+            p.riskTier,
+            p.currentExposure,
+            p.attester,
+            p.attestationExpiry,
+            p.exists
+        );
     }
 
     function profileExists(address user) external view returns (bool) {

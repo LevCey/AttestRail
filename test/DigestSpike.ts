@@ -11,11 +11,11 @@ describe("Spike S2 — Handle Digest Verification", function () {
     // Encrypt a known set of attributes off-chain
     const encrypted = await fhevm
       .createEncryptedInput(contractAddress, deployer.address)
-      .addBool(true)       // kycVerified
-      .addBool(true)       // jurisdictionAllowed
-      .addBool(false)      // sanctionsFlag
-      .add8(1)             // riskTier
-      .add64(10000)        // currentExposure
+      .addBool(true) // kycVerified
+      .addBool(true) // jurisdictionAllowed
+      .addBool(false) // sanctionsFlag
+      .add8(1) // riskTier
+      .add64(10000) // currentExposure
       .encrypt();
 
     const handles = encrypted.handles;
@@ -26,13 +26,7 @@ describe("Spike S2 — Handle Digest Verification", function () {
     const offChainDigest = ethers.keccak256(ethers.concat(handles));
 
     // On-chain digest
-    const onChainDigest = await contract.computeDigest(
-      handles[0],
-      handles[1],
-      handles[2],
-      handles[3],
-      handles[4],
-    );
+    const onChainDigest = await contract.computeDigest(handles[0], handles[1], handles[2], handles[3], handles[4]);
 
     expect(onChainDigest).to.equal(offChainDigest);
     console.log("    ✓ Digest match confirmed:", offChainDigest);
