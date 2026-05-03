@@ -1,0 +1,139 @@
+:root {
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  color: #213547;
+  background: #f8f9fa;
+}
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+nav button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #dee2e6;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+nav button.active {
+  background: #213547;
+  color: white;
+  border-color: #213547;
+}
+
+.wallet {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.banner {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.banner a {
+  color: #856404;
+}
+
+.form-group {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group h3 {
+  margin-top: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input[type="number"],
+.form-group input[type="text"],
+.form-group select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  margin-left: 0.5rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  background: #213547;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+code {
+  background: #e9ecef;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.log {
+  background: #1a1a2e;
+  color: #0f0;
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.log h3 {
+  color: #aaa;
+  margin-top: 0;
+}
