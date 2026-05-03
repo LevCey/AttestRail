@@ -351,4 +351,325 @@ describe("AttestRail — Full Integration", function () {
       ).to.be.revertedWithCustomError(contracts.token, "CheckParamMismatch");
     });
   });
+
+  // ---- TRUST LAYER TESTS (Task 6) ----
+  describe("Trust layer", function () {
+    it("6.2 unknown signer → AttesterNotApproved", async function () {
+      const registryAddr = await contracts.registry.getAddress();
+      const encrypted = await fhevm
+        .createEncryptedInput(registryAddr, signers.investor.address)
+        .addBool(true)
+        .addBool(true)
+        .addBool(false)
+        .add8(1)
+        .add64(5000)
+        .encrypt();
+
+      const digest = ethers.keccak256(ethers.concat(encrypted.handles));
+      const expiry = Math.floor(Date.now() / 1000) + 3600;
+      const nonce = BigInt(ethers.hexlify(ethers.randomBytes(32)));
+      const attestation = { user: signers.investor.address, handlesDigest: digest, expiry, nonce };
+
+      // Sign with a non-approved signer (investor instead of attester)
+      const sig = await signAttestation(signers.investor, registryAddr, attestation);
+
+      await expect(
+        contracts.registry
+          .connect(signers.investor)
+          .submitProfile(
+            encrypted.handles[0],
+            encrypted.handles[1],
+            encrypted.handles[2],
+            encrypted.handles[3],
+            encrypted.handles[4],
+            encrypted.inputProof,
+            attestation,
+            sig,
+          ),
+      ).to.be.revertedWithCustomError(contracts.registry, "AttesterNotApproved");
+    });
+
+    it("6.3 expired attestation → AttestationExpired", async function () {
+      const registryAddr = await contracts.registry.getAddress();
+      const encrypted = await fhevm
+        .createEncryptedInput(registryAddr, signers.investor.address)
+        .addBool(true)
+        .addBool(true)
+        .addBool(false)
+        .add8(1)
+        .add64(5000)
+        .encrypt();
+
+      const digest = ethers.keccak256(ethers.concat(encrypted.handles));
+      const expiry = 1; // expired (unix timestamp 1)
+      const nonce = BigInt(ethers.hexlify(ethers.randomBytes(32)));
+      const attestation = { user: signers.investor.address, handlesDigest: digest, expiry, nonce };
+      const sig = await signAttestation(signers.attester, registryAddr, attestation);
+
+      await expect(
+        contracts.registry
+          .connect(signers.investor)
+          .submitProfile(
+            encrypted.handles[0],
+            encrypted.handles[1],
+            encrypted.handles[2],
+            encrypted.handles[3],
+            encrypted.handles[4],
+            encrypted.inputProof,
+            attestation,
+            sig,
+          ),
+      ).to.be.revertedWithCustomError(contracts.registry, "AttestationExpired");
+    });
+
+    it("6.4 replayed nonce → NonceReused", async function () {
+      // First submission succeeds
+      await submitProfile(contracts, signers, {
+        kyc: true,
+        jurisdiction: true,
+        sanctions: false,
+        riskTier: 1,
+        exposure: 5000,
+      });
+
+      // Second submission with same nonce pattern — use a fixed nonce
+      const registryAddr = await contracts.registry.getAddress();
+      const encrypted = await fhevm
+        .createEncryptedInput(registryAddr, signers.investor.address)
+        .addBool(true)
+        .addBool(true)
+        .addBool(false)
+        .add8(1)
+        .add64(5000)
+        .encrypt();
+
+      const digest = ethers.keccak256(ethers.concat(encrypted.handles));
+      const expiry = Math.floor(Date.now() / 1000) + 3600;
+      const nonce = 42n; // fixed nonce
+
+      // First call with this nonce
+      const att1 = { user: signers.investor.address, handlesDigest: digest, expiry, nonce };
+      const sig1 = await signAttestation(signers.attester, registryAddr, att1);
+      await contracts.registry
+        .connect(signers.investor)
+        .submitProfile(
+          encrypted.handles[0],
+          encrypted.handles[1],
+          encrypted.handles[2],
+          encrypted.handles[3],
+          encrypted.handles[4],
+          encrypted.inputProof,
+          att1,
+          sig1,
+        );
+
+      // Re-encrypt for second call (handles change)
+      const encrypted2 = await fhevm
+        .createEncryptedInput(registryAddr, signers.investor.address)
+        .addBool(true)
+        .addBool(true)
+        .addBool(false)
+        .add8(1)
+        .add64(5000)
+        .encrypt();
+      const digest2 = ethers.keccak256(ethers.concat(encrypted2.handles));
+      const att2 = { user: signers.investor.address, handlesDigest: digest2, expiry, nonce: 42n };
+      const sig2 = await signAttestation(signers.attester, registryAddr, att2);
+
+      await expect(
+        contracts.registry
+          .connect(signers.investor)
+          .submitProfile(
+            encrypted2.handles[0],
+            encrypted2.handles[1],
+            encrypted2.handles[2],
+            encrypted2.handles[3],
+            encrypted2.handles[4],
+            encrypted2.inputProof,
+            att2,
+            sig2,
+          ),
+      ).to.be.revertedWithCustomError(contracts.attesterRegistry, "NonceReused");
+    });
+
+    it("6.5 wrong user → UserMismatch", async function () {
+      const registryAddr = await contracts.registry.getAddress();
+      const encrypted = await fhevm
+        .createEncryptedInput(registryAddr, signers.investor.address)
+        .addBool(true)
+        .addBool(true)
+        .addBool(false)
+        .add8(1)
+        .add64(5000)
+        .encrypt();
+
+      const digest = ethers.keccak256(ethers.concat(encrypted.handles));
+      const expiry = Math.floor(Date.now() / 1000) + 3600;
+      const nonce = BigInt(ethers.hexlify(ethers.randomBytes(32)));
+      // Attestation says user is investor, but recipient calls submitProfile
+      const attestation = { user: signers.investor.address, handlesDigest: digest, expiry, nonce };
+      const sig = await signAttestation(signers.attester, registryAddr, attestation);
+
+      await expect(
+        contracts.registry
+          .connect(signers.recipient) // wrong caller
+          .submitProfile(
+            encrypted.handles[0],
+            encrypted.handles[1],
+            encrypted.handles[2],
+            encrypted.handles[3],
+            encrypted.handles[4],
+            encrypted.inputProof,
+            attestation,
+            sig,
+          ),
+      ).to.be.revertedWithCustomError(contracts.registry, "UserMismatch");
+    });
+
+    it("6.6 tampered handles → DigestMismatch", async function () {
+      const registryAddr = await contracts.registry.getAddress();
+      const encrypted = await fhevm
+        .createEncryptedInput(registryAddr, signers.investor.address)
+        .addBool(true)
+        .addBool(true)
+        .addBool(false)
+        .add8(1)
+        .add64(5000)
+        .encrypt();
+
+      const wrongDigest = ethers.keccak256(ethers.toUtf8Bytes("tampered"));
+      const expiry = Math.floor(Date.now() / 1000) + 3600;
+      const nonce = BigInt(ethers.hexlify(ethers.randomBytes(32)));
+      const attestation = { user: signers.investor.address, handlesDigest: wrongDigest, expiry, nonce };
+      const sig = await signAttestation(signers.attester, registryAddr, attestation);
+
+      await expect(
+        contracts.registry
+          .connect(signers.investor)
+          .submitProfile(
+            encrypted.handles[0],
+            encrypted.handles[1],
+            encrypted.handles[2],
+            encrypted.handles[3],
+            encrypted.handles[4],
+            encrypted.inputProof,
+            attestation,
+            sig,
+          ),
+      ).to.be.revertedWithCustomError(contracts.registry, "DigestMismatch");
+    });
+  });
+
+  // ---- ELIGIBILITY FLOW TESTS (Task 11) ----
+  describe("Eligibility flow", function () {
+    it("11.5 requestPublicDecryption on already-decryptable → WrongStatus", async function () {
+      await submitProfile(contracts, signers, {
+        kyc: true,
+        jurisdiction: true,
+        sanctions: false,
+        riskTier: 1,
+        exposure: 5000,
+      });
+      const policyId = await createPolicy(contracts, signers, 100_000, 10_000_000);
+
+      const tx = await contracts.gate
+        .connect(signers.investor)
+        .createEligibilityCheck(policyId, signers.recipient.address, 10_000);
+      const receipt = await tx.wait();
+      const checkId = extractCheckId(receipt!);
+
+      // First call succeeds
+      await contracts.gate.requestPublicDecryption(checkId);
+
+      // Second call should revert — already Decryptable
+      await expect(contracts.gate.requestPublicDecryption(checkId)).to.be.revertedWithCustomError(
+        contracts.gate,
+        "WrongStatus",
+      );
+    });
+
+    it("11.5 publicDecryptEbool returns correct result after makePubliclyDecryptable", async function () {
+      await submitProfile(contracts, signers, {
+        kyc: true,
+        jurisdiction: true,
+        sanctions: false,
+        riskTier: 1,
+        exposure: 5000,
+      });
+      const policyId = await createPolicy(contracts, signers, 100_000, 10_000_000);
+
+      const tx = await contracts.gate
+        .connect(signers.investor)
+        .createEligibilityCheck(policyId, signers.recipient.address, 10_000);
+      const receipt = await tx.wait();
+      const checkId = extractCheckId(receipt!);
+
+      await contracts.gate.requestPublicDecryption(checkId);
+
+      const handle = await contracts.gate.getEncryptedEligible(checkId);
+      const result = await fhevm.publicDecryptEbool(handle);
+      expect(result).to.equal(true);
+    });
+  });
+
+  // ---- SELECTIVE DISCLOSURE TESTS (Task 14.5) ----
+  describe("Selective disclosure", function () {
+    it("14.5 admin grants disclosure, officer can decrypt", async function () {
+      await submitProfile(contracts, signers, {
+        kyc: true,
+        jurisdiction: true,
+        sanctions: false,
+        riskTier: 2,
+        exposure: 7500,
+      });
+
+      // Admin grants disclosure of currentExposure (fieldId=0) to recipient (acting as officer)
+      await contracts.registry
+        .connect(signers.admin)
+        .grantDisclosure(signers.investor.address, signers.recipient.address, 0);
+
+      // Officer decrypts the field
+      const profile = await contracts.registry.getProfile(signers.investor.address);
+      const exposureHandle = profile[4]; // currentExposure
+      const clearExposure = await fhevm.userDecryptEuint(
+        FhevmType.euint64,
+        exposureHandle,
+        await contracts.registry.getAddress(),
+        signers.recipient,
+      );
+      expect(clearExposure).to.equal(7500n);
+    });
+
+    it("14.5 non-admin → NotAdmin", async function () {
+      await submitProfile(contracts, signers, {
+        kyc: true,
+        jurisdiction: true,
+        sanctions: false,
+        riskTier: 1,
+        exposure: 5000,
+      });
+
+      await expect(
+        contracts.registry
+          .connect(signers.investor) // not admin
+          .grantDisclosure(signers.investor.address, signers.recipient.address, 0),
+      ).to.be.revertedWithCustomError(contracts.registry, "NotAdmin");
+    });
+
+    it("14.5 unsupported fieldId → UnknownField", async function () {
+      await submitProfile(contracts, signers, {
+        kyc: true,
+        jurisdiction: true,
+        sanctions: false,
+        riskTier: 1,
+        exposure: 5000,
+      });
+
+      await expect(
+        contracts.registry
+          .connect(signers.admin)
+          .grantDisclosure(signers.investor.address, signers.recipient.address, 99),
+      ).to.be.revertedWithCustomError(contracts.registry, "UnknownField");
+    });
+  });
 });
