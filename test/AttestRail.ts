@@ -2,6 +2,7 @@ import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { ethers, fhevm } from "hardhat";
 import { expect } from "chai";
 import { FhevmType } from "@fhevm/hardhat-plugin";
+import { EventLog, TransactionReceipt } from "ethers";
 
 // --- Types ---
 type Contracts = {
@@ -128,10 +129,10 @@ async function createPolicy(contracts: Contracts, signers: Signers, maxExposure:
 // TESTS
 // ============================================================
 
-function extractCheckId(receipt: ethers.TransactionReceipt): string {
+function extractCheckId(receipt: TransactionReceipt): string {
   const log = receipt.logs.find(
-    (l) => "fragment" in l && (l as ethers.EventLog).fragment?.name === "EligibilityCheckCreated",
-  ) as ethers.EventLog;
+    (l) => "fragment" in l && (l as EventLog).fragment?.name === "EligibilityCheckCreated",
+  ) as EventLog;
   return log.args[0];
 }
 
