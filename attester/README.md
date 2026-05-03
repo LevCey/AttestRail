@@ -23,4 +23,26 @@ in the demo. Production deployments would replace it with a regulated provider.
 
 ## Status
 
-Not yet implemented. Scaffolds in Phase 5 of the build (Tasks 15–17).
+Implemented. Two endpoints:
+
+- `POST /attest` — accepts `{ user, attributes, handlesDigest? }`. If `handlesDigest` is provided, signs and returns the
+  attestation. If not, returns attributes + nonce + expiry for the frontend to encrypt first.
+- `POST /sign` — accepts `{ user, handlesDigest, nonce?, expiry? }` and returns the signed attestation.
+- `GET /health` — returns attester address.
+
+## Running
+
+```bash
+ATTESTER_PRIVATE_KEY=0x... \
+REGISTRY_ADDRESS=0x... \
+CHAIN_ID=31337 \
+npx ts-node attester/service.ts
+```
+
+## Demo flow
+
+1. Frontend encrypts attributes via Relayer SDK → gets `handles` + `inputProof`
+2. Frontend computes `handlesDigest = keccak256(concat(handles))`
+3. Frontend calls `POST /sign` with `{ user, handlesDigest }`
+4. Attester signs EIP-712 attestation and returns `{ attestation, signature }`
+5. Frontend calls `submitProfile(handles, inputProof, attestation, signature)`
