@@ -11,10 +11,23 @@ Built on [Zama FHEVM](https://github.com/zama-ai/fhevm-hardhat-template).
 
 ## Status
 
-**Builder Track MVP complete.** 5 contracts, 25 passing tests, mock attester service, frontend demo scaffold.
+**Builder Track MVP complete.** 5 contracts deployed to Sepolia, 25 passing tests, mock attester service, frontend demo
+scaffold.
 
-- Sepolia deployment: pending (requires funded wallet)
-- Latency measurement: pending Sepolia
+### Sepolia Deployment (Chain ID: 11155111)
+
+| Contract               | Address                                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| AttesterRegistry       | [`0xf714a62Dce395CB429E3FF310e52F40DBe2d0B3d`](https://sepolia.etherscan.io/address/0xf714a62Dce395CB429E3FF310e52F40DBe2d0B3d) |
+| AttestRailPolicy       | [`0xc3F4D70068D7057AD253bB88e4E18e1d69f26A4D`](https://sepolia.etherscan.io/address/0xc3F4D70068D7057AD253bB88e4E18e1d69f26A4D) |
+| AttestRailRegistry     | [`0x7275f7FBa4Fa3049054302C27E52F68A34a69000`](https://sepolia.etherscan.io/address/0x7275f7FBa4Fa3049054302C27E52F68A34a69000) |
+| PrivateEligibilityGate | [`0x803Fc2767028b2fA9B117BE802F1333818D9929d`](https://sepolia.etherscan.io/address/0x803Fc2767028b2fA9B117BE802F1333818D9929d) |
+| MockRWAToken           | [`0x34EDe0ef5928b55d1F2C2CBe1aB71dbd1c6cA3E3`](https://sepolia.etherscan.io/address/0x34EDe0ef5928b55d1F2C2CBe1aB71dbd1c6cA3E3) |
+
+**Roles:**
+
+- Admin/Issuer: `0x79a4Ca003893a3E80bbdBb57f59b9745018106f6`
+- Attester: `0x9671D9C587A2f390100f21d1b0cA74734887755F`
 
 ## Architecture
 
