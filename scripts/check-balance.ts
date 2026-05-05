@@ -7,4 +7,4 @@ async function main() {
   console.log(`Balance: ${ethers.formatEther(balance)} ETH`);
 }
 
-main();
+main().catch(console.error);
