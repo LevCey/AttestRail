@@ -11,6 +11,13 @@ async function main() {
     throw new Error(`No deployment found at ${addrFile}. Run deploy first.`);
   }
 
+  // Initialize fhevm plugin (required for Sepolia; no-op on mock)
+  try {
+    await fhevm.initializeCLIApi();
+  } catch {
+    // Already initialized or mock mode
+  }
+
   const addr = JSON.parse(fs.readFileSync(addrFile, "utf-8"));
   const [deployer] = await ethers.getSigners();
 
