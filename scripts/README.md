@@ -1,25 +1,32 @@
 # Scripts
 
-Operational scripts for AttestRail. To be implemented in Phase 1+.
+## deploy.ts
 
-## Planned
-
-| Script               | Purpose                                                                                               | Phase            |
-| -------------------- | ----------------------------------------------------------------------------------------------------- | ---------------- |
-| `deploy.ts`          | Idempotent deployment + post-deploy admin ops; writes `deployments/<network>/addresses.json`          | Phase 7, Task 23 |
-| `seed.ts`            | Default policy with encrypted thresholds, mock token mint to issuer, optional aggregate prepopulation | Phase 7, Task 24 |
-| `measure-latency.ts` | Sepolia decryption-latency profile; writes results to `docs/architecture.md`                          | Phase 7, Task 26 |
-
-All scripts are invoked via Hardhat:
+Deploys all 5 contracts in order, performs post-deploy wiring, writes `deployments/<network>/addresses.json`.
 
 ```bash
-npx hardhat run scripts/<name>.ts --network <network>
+npx hardhat run scripts/deploy.ts --network hardhat
+npx hardhat run scripts/deploy.ts --network sepolia
 ```
 
-## Idempotency
+Idempotent: skips if `addresses.json` already exists.
 
-`deploy.ts` and `seed.ts` MUST be idempotent. Re-running detects existing addresses / state and skips already-completed
-steps. Mismatches (e.g., attester address differs from `ATTESTER_PRIVATE_KEY`) fail loudly.
+## seed.ts
 
-This is the single source of deployment truth — README and `docs/demo-flow.md` reference these scripts rather than
-reproducing instructions.
+Creates the default policy with encrypted thresholds and mints tokens to the issuer.
+
+```bash
+npx hardhat run scripts/seed.ts --network hardhat
+```
+
+Idempotent: skips if policy 0 already exists.
+
+## measure-latency.ts
+
+Runs N eligibility check + transfer cycles and reports timing stats.
+
+```bash
+RUNS=10 npx hardhat run scripts/measure-latency.ts --network sepolia
+```
+
+Requires a deployed + seeded environment with a submitted profile.
