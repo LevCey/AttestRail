@@ -22,6 +22,13 @@ interface RunResult {
 }
 
 async function main() {
+  // Initialize fhevm plugin (required for Sepolia)
+  try {
+    await fhevm.initializeCLIApi();
+  } catch {
+    // already initialized
+  }
+
   const network = await ethers.provider.getNetwork();
   const networkName = network.name === "unknown" ? `chain-${network.chainId}` : network.name;
   const addrFile = path.join("deployments", networkName, "addresses.json");

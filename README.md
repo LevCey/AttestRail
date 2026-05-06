@@ -29,6 +29,17 @@ scaffold.
 - Admin/Issuer: `0x79a4Ca003893a3E80bbdBb57f59b9745018106f6`
 - Attester: `0x9671D9C587A2f390100f21d1b0cA74734887755F`
 
+### Measured Latency (Sepolia)
+
+| Metric              | Value |
+| ------------------- | ----- |
+| Median (end-to-end) | ~48s  |
+| P90                 | ~48s  |
+| Failure rate        | 0%    |
+| Avg gas per flow    | ~866K |
+
+End-to-end = createEligibilityCheck + requestPublicDecryption + gatedTransfer (3 transactions).
+
 ## Architecture
 
 ```
