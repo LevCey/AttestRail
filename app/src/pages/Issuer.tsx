@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { JsonRpcSigner, ethers } from "ethers";
+import { JsonRpcSigner } from "ethers";
 
 interface Props {
   signer: JsonRpcSigner | null;
