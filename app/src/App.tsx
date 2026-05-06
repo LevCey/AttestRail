@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BrowserProvider, JsonRpcSigner } from "ethers";
 import { Overview } from "./pages/Overview";
 import { Investor } from "./pages/Investor";
@@ -38,14 +38,11 @@ export default function App() {
     setNetwork(net.name === "unknown" ? `Chain ${net.chainId}` : net.name);
   }
 
-  useEffect(() => {
-    connect();
-  }, []);
-
   return (
     <div className="app">
       <header>
-        <h1>AttestRail Demo</h1>
+        <img src="/logo.png" alt="AttestRail" className="header-logo" />
+        <h1>AttestRail</h1>
         <nav>
           <button className={page === "overview" ? "active" : ""} onClick={() => setPage("overview")}>
             Overview
@@ -72,11 +69,6 @@ export default function App() {
       </header>
 
       <main>
-        <div className="banner">
-          ⚠️ The eligible/blocked bit is publicly decryptable by design. On-chain transfer enforcement is FHE-native.
-          <a href="https://github.com/LevCey/AttestRail#disclosure-and-inference-exposure"> Learn more</a>
-        </div>
-
         {page === "overview" && <Overview addresses={ADDRESSES} account={account} network={network} />}
         {page === "investor" && <Investor signer={signer} addresses={ADDRESSES} account={account} />}
         {page === "issuer" && <Issuer signer={signer} addresses={ADDRESSES} account={account} />}

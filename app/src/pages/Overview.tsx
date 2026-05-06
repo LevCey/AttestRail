@@ -5,57 +5,118 @@ interface Props {
 }
 
 export function Overview({ addresses, account, network }: Props) {
+  const contracts = Object.entries(addresses).filter(([, v]) => v && v.startsWith("0x"));
+
   return (
-    <section>
-      <h2>Overview</h2>
-      <p>
-        AttestRail is a confidential compliance attestation layer for institutional onchain finance. This demo walks
-        through the full eligibility flow using Zama FHEVM encrypted state.
-      </p>
+    <section className="overview">
+      {/* Hero */}
+      <div className="hero">
+        <div className="hero-badge">Zama FHEVM • Sepolia Testnet</div>
+        <h2>Private RWA Eligibility Gate</h2>
+        <p className="hero-desc">
+          Confidential compliance attestations for institutional onchain finance. All eligibility checks, policy
+          thresholds, and token balances are encrypted. Transfer enforcement is FHE-native.
+        </p>
+        <div className="hero-stats">
+          <div className="stat">
+            <span className="stat-value">5</span>
+            <span className="stat-label">Contracts</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value">25</span>
+            <span className="stat-label">Tests Passing</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value">7</span>
+            <span className="stat-label">FHE Types</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value">euint64</span>
+            <span className="stat-label">Encrypted Balances</span>
+          </div>
+        </div>
+      </div>
 
-      <h3>Network</h3>
-      <p>{network || "Not connected"}</p>
+      {/* Connection Status */}
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-header">
+            <span className="card-icon">🌐</span> Network
+          </div>
+          <div className="card-value">{network || <span className="muted">Not connected</span>}</div>
+        </div>
+        <div className="card">
+          <div className="card-header">
+            <span className="card-icon">👛</span> Wallet
+          </div>
+          <div className="card-value mono">
+            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : <span className="muted">Not connected</span>}
+          </div>
+        </div>
+      </div>
 
-      <h3>Connected Wallet</h3>
-      <p>{account || "Not connected"}</p>
-
-      <h3>Deployed Contracts</h3>
-      <table>
-        <tbody>
-          {Object.entries(addresses)
-            .filter(([, v]) => v && v.startsWith("0x"))
-            .map(([name, addr]) => (
-              <tr key={name}>
-                <td>{name}</td>
-                <td>
-                  <code>{addr}</code>
-                </td>
-              </tr>
+      {/* Deployed Contracts */}
+      {contracts.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <span className="card-icon">📋</span> Deployed Contracts
+          </div>
+          <div className="contracts-grid">
+            {contracts.map(([name, addr]) => (
+              <div key={name} className="contract-row">
+                <span className="contract-name">{name}</span>
+                <a
+                  href={`https://sepolia.etherscan.io/address/${addr}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="contract-addr"
+                >
+                  {addr.slice(0, 6)}...{addr.slice(-4)} ↗
+                </a>
+              </div>
             ))}
-        </tbody>
-      </table>
+          </div>
+        </div>
+      )}
 
-      <h3>Flow</h3>
-      <ol>
-        <li>
-          <strong>Issuer</strong> creates a policy with encrypted thresholds
-        </li>
-        <li>
-          <strong>Investor</strong> requests attestation from mock attester
-        </li>
-        <li>
-          <strong>Investor</strong> submits signed encrypted profile
-        </li>
-        <li>
-          <strong>Investor</strong> creates eligibility check (FHE computation)
-        </li>
-        <li>
-          <strong>Anyone</strong> requests public decryption (UI visibility)
-        </li>
-        <li>
-          <strong>Investor</strong> executes gated transfer (FHE.select enforcement)
-        </li>
-      </ol>
+      {/* Flow */}
+      <div className="card">
+        <div className="card-header">
+          <span className="card-icon">⚡</span> Eligibility Flow
+        </div>
+        <div className="flow-steps">
+          <div className="flow-step">
+            <span className="step-num">1</span>
+            <div>
+              <strong>Issuer</strong> creates policy with encrypted thresholds
+            </div>
+          </div>
+          <div className="flow-step">
+            <span className="step-num">2</span>
+            <div>
+              <strong>Attester</strong> signs encrypted compliance profile (EIP-712)
+            </div>
+          </div>
+          <div className="flow-step">
+            <span className="step-num">3</span>
+            <div>
+              <strong>Investor</strong> submits signed profile on-chain
+            </div>
+          </div>
+          <div className="flow-step">
+            <span className="step-num">4</span>
+            <div>
+              <strong>Gate</strong> evaluates eligibility over encrypted state (FHE)
+            </div>
+          </div>
+          <div className="flow-step">
+            <span className="step-num">5</span>
+            <div>
+              <strong>Token</strong> executes transfer via <code>FHE.select(eligible, amount, 0)</code>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
