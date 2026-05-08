@@ -30,7 +30,17 @@ contract AttestRailPolicy is ZamaEthereumConfig {
     event PolicyExposureUpdated(uint256 indexed policyId);
     event PolicyActiveToggled(uint256 indexed policyId, bool active);
 
+    address public admin;
+
+    error GateAlreadySet();
+
+    constructor() {
+        admin = msg.sender;
+    }
+
     function setGateContract(address _gate) external {
+        if (msg.sender != admin) revert OnlyAdmin();
+        if (gateContract != address(0)) revert GateAlreadySet();
         gateContract = _gate;
     }
 

@@ -51,8 +51,11 @@ contract AttestRailRegistry is ZamaEthereumConfig, EIP712("AttestRail", "1") {
         registryAdmin = _admin;
     }
 
+    error GateAlreadySet();
+
     function setGateContract(address _gate) external {
         if (msg.sender != registryAdmin) revert NotAdmin();
+        if (gateContract != address(0)) revert GateAlreadySet();
         gateContract = _gate;
     }
 

@@ -102,7 +102,7 @@ cd app && npm install && npm run dev
 | Trust layer          | 5      | Unknown signer, expired attestation, nonce replay, wrong user, digest tamper |
 | Eligibility flow     | 2      | Wrong status revert, public decrypt correctness                              |
 | Selective disclosure | 3      | Admin grant + officer decrypt, non-admin revert, unknown field               |
-| Spikes               | 7      | S1 (ebool + public decrypt), S2 (handle digest), FHECounter                  |
+| Spikes               | 9      | S1 (5 tests), S2 (1 test), FHECounter (3 tests)                              |
 | **Total**            | **25** |                                                                              |
 
 ## Disclosure and Inference Exposure
@@ -117,11 +117,25 @@ The eligible/blocked bit is publicly decryptable by design. This is a deliberate
 **Inference risk**: Across many checks against the same user or policy, eligible/blocked outcomes correlate with private
 attributes and aggregate utilization, allowing inference.
 
+**Reserved-exposure DoS surface**: The encrypted aggregate increments at eligibility-check creation time, not at
+transfer settlement. An adversary holding a valid attestation can create checks they never execute, inflating the
+aggregate until legitimate transfers are blocked. The failure mode is one-sided: false negatives (legitimate users
+blocked), never false positives (over-cap transfers approved). Release-on-non-execution is post-MVP.
+
+**Selective disclosure is permanent**: `FHE.allow` grants cannot be revoked — Zama's ACL has no `FHE.revoke` primitive.
+Once an officer is granted disclosure on a field, that grant persists for the lifetime of the ciphertext. Production
+deployments must rotate ciphertexts (re-attestation) to effectively revoke access.
+
+**Mock attester signs, does not encrypt**: The attester service signs EIP-712 attestations over handle digests provided
+by the client. Encryption happens client-side via the Relayer SDK. The attester never holds plaintext attributes — it
+only vouches that the digest was produced by an authorized process.
+
 **Post-MVP mitigations** (designed, not enforced):
 
 - Per-wallet rate limits
 - Batched decryption
 - Decoy checks
+- Reserved-exposure release on expiry
 - Full Pattern B (confidential transfer amounts)
 
 ## Why FHE, Not ZK
@@ -131,7 +145,8 @@ AttestRail's load-bearing computation is shared, evolving state that no particip
 - Per-user encrypted compliance attributes are provided by an approved attester, not user-claimed
 - Issuer policy thresholds are encrypted `euint64` — competitors can't see your limits
 - The issuer-wide aggregate updates via `FHE.select` on every check — no participant ever decrypts it
-- Token balances are `euint64` — transfer amounts are gated in the encrypted domain
+- Token balances are `euint64` — balance updates are gated by encrypted eligibility via `FHE.select` (transfer amounts
+  are public `uint64`; confidential amounts are post-MVP Pattern B)
 
 ZK proofs verify a static claim. FHE computes over encrypted state that evolves with every transaction.
 

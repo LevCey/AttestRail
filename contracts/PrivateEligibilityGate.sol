@@ -48,12 +48,20 @@ contract PrivateEligibilityGate is ZamaEthereumConfig {
     event EligibilityCheckCreated(bytes32 indexed checkId, address indexed user, uint256 indexed policyId);
     event EligibilityDecryptable(bytes32 indexed checkId);
 
+    address public immutable admin;
+
     constructor(AttestRailPolicy _policy, AttestRailRegistry _registry) {
         policyContract = _policy;
         registry = _registry;
+        admin = msg.sender;
     }
 
+    error OnlyAdmin();
+    error TokenAlreadySet();
+
     function setTokenContract(address _token) external {
+        if (msg.sender != admin) revert OnlyAdmin();
+        if (tokenContract != address(0)) revert TokenAlreadySet();
         tokenContract = _token;
     }
 
@@ -80,7 +88,12 @@ contract PrivateEligibilityGate is ZamaEthereumConfig {
         ) = registry.getProfile(msg.sender);
 
         // Per-user eligibility computation
-        ebool eligible = kycVerified;
+        ebool eligible;
+        if (policyContract.getKycRequired(policyId)) {
+            eligible = kycVerified;
+        } else {
+            eligible = FHE.asEbool(true);
+        }
 
         if (policyContract.getJurisdictionRequired(policyId)) {
             eligible = FHE.and(eligible, jurisdictionAllowed);
@@ -168,7 +181,10 @@ contract PrivateEligibilityGate is ZamaEthereumConfig {
         return (c.user, c.policyId, c.to, c.amount, c.encryptedEligible, c.status, c.consumed, c.exists);
     }
 
+    error OnlyToken();
+
     function markConsumed(bytes32 checkId) external {
+        if (msg.sender != tokenContract) revert OnlyToken();
         checks[checkId].consumed = true;
     }
 

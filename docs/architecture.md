@@ -116,4 +116,17 @@ If `eligible` is encrypted-false, `effectiveAmount` is encrypted-zero — balanc
 ## Latency
 
 - **Local (hardhat mock)**: Instant — all FHE operations simulated
-- **Sepolia**: TBD — requires funded deployer wallet
+- **Sepolia (measured 2026-05-05, 5 runs)**:
+
+| Run | Outcome  | Duration | Gas     |
+| --- | -------- | -------- | ------- |
+| 1   | eligible | 47,825ms | 865,536 |
+| 2   | blocked  | 34,907ms | 865,796 |
+| 3   | eligible | 47,905ms | 865,756 |
+| 4   | blocked  | 48,472ms | 865,796 |
+| 5   | eligible | 35,420ms | 865,756 |
+
+**Summary**: Median 47.8s, P90 48.5s, 0% failure, avg gas 865,728.
+
+Each run = createEligibilityCheck + requestPublicDecryption + gatedTransfer (3 transactions). Latency dominated by
+Sepolia block time (~12s × 3 tx) + FHEVM coprocessor overhead.
