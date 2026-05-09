@@ -87,7 +87,7 @@ export function Compliance({ signer, addresses, onConnect }: Props) {
           <div className="form-group">
             <h3>Grant Selective Disclosure</h3>
             <label>
-              User Address:{" "}
+              Profile Owner Address:{" "}
               <input
                 type="text"
                 value={user}
