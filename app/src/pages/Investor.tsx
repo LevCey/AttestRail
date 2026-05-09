@@ -5,9 +5,10 @@ interface Props {
   signer: JsonRpcSigner | null;
   addresses: Record<string, string>;
   account: string;
+  onConnect?: () => void;
 }
 
-export function Investor({ signer, addresses, account }: Props) {
+export function Investor({ signer, addresses, account, onConnect }: Props) {
   const [kyc, setKyc] = useState(true);
   const [jurisdiction, setJurisdiction] = useState(true);
   const [sanctions, setSanctions] = useState(false);
@@ -117,66 +118,114 @@ export function Investor({ signer, addresses, account }: Props) {
 
   return (
     <section>
-      <h2>Investor</h2>
-
-      <div className="form-group">
-        <h3>1. Demo Attributes</h3>
-        <label>
-          <input type="checkbox" checked={kyc} onChange={(e) => setKyc(e.target.checked)} /> KYC Verified
-        </label>
-        <label>
-          <input type="checkbox" checked={jurisdiction} onChange={(e) => setJurisdiction(e.target.checked)} />{" "}
-          Jurisdiction Allowed
-        </label>
-        <label>
-          <input type="checkbox" checked={sanctions} onChange={(e) => setSanctions(e.target.checked)} /> Sanctioned
-        </label>
-        <label>
-          Risk Tier:{" "}
-          <input type="number" value={riskTier} min={0} max={5} onChange={(e) => setRiskTier(+e.target.value)} />
-        </label>
-        <label>
-          Current Exposure: <input type="number" value={exposure} onChange={(e) => setExposure(+e.target.value)} />
-        </label>
-        <button onClick={requestAttestation}>Request Attestation</button>
+      <div className="page-header">
+        <h2>Investor</h2>
+        <p className="page-desc">
+          Submit an encrypted compliance profile, run an <code className="zama">Zama FHE</code> eligibility check, and
+          execute a gated transfer — all enforced on-chain via encrypted state.
+        </p>
       </div>
 
-      <div className="form-group">
-        <h3>2. Eligibility Check</h3>
-        <label>
-          Policy ID: <input type="number" value={policyId} onChange={(e) => setPolicyId(+e.target.value)} />
-        </label>
-        <label>
-          Recipient:{" "}
-          <input type="text" value={recipient} placeholder="0x..." onChange={(e) => setRecipient(e.target.value)} />
-        </label>
-        <label>
-          Transfer Amount:{" "}
-          <input type="number" value={transferAmount} onChange={(e) => setTransferAmount(+e.target.value)} />
-        </label>
-        <button onClick={createCheck} disabled={!signer}>
-          Check Eligibility
-        </button>
-      </div>
+      {!signer && (
+        <div className="card connect-cta">
+          <h3
+            style={{
+              textTransform: "none",
+              letterSpacing: "normal",
+              fontSize: "1.05rem",
+              color: "var(--text-primary)",
+            }}
+          >
+            Connect a wallet to start the investor flow
+          </h3>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", margin: "0.5rem 0 1rem" }}>
+            Use a Sepolia wallet to request a mock attestation, submit an encrypted compliance profile, create an
+            eligibility check, and execute an FHE-gated transfer.
+          </p>
+          {onConnect && <button onClick={onConnect}>Connect Wallet</button>}
+          <div style={{ marginTop: "1.25rem", textAlign: "left", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+            <strong style={{ color: "var(--text-secondary)" }}>Available after connection:</strong>
+            <ol style={{ marginTop: "0.4rem", paddingLeft: "1.2rem", lineHeight: "1.8" }}>
+              <li>Set demo compliance attributes</li>
+              <li>Request attester EIP-712 signature</li>
+              <li>Create FHE eligibility check</li>
+              <li>Request public decryption (UI visibility)</li>
+              <li>Execute FHE.select-gated transfer</li>
+            </ol>
+          </div>
+        </div>
+      )}
 
-      <div className="form-group">
-        <h3>3. Decryption & Transfer</h3>
-        <p>Check ID: {checkId ? <code>{checkId.slice(0, 18)}...</code> : "—"}</p>
-        <button onClick={requestDecryption} disabled={!checkId}>
-          Request Decryption
-        </button>
-        {eligible !== null && <p>Eligible: {eligible ? "✅ Yes" : "❌ No"}</p>}
-        <button onClick={executeTransfer} disabled={!checkId}>
-          Execute Transfer
-        </button>
-      </div>
+      {signer && (
+        <>
+          <div className="form-group">
+            <h3>1. Demo Attributes</h3>
+            <label>
+              <input type="checkbox" checked={kyc} onChange={(e) => setKyc(e.target.checked)} /> KYC Verified
+            </label>
+            <label>
+              <input type="checkbox" checked={jurisdiction} onChange={(e) => setJurisdiction(e.target.checked)} />{" "}
+              Jurisdiction Allowed
+            </label>
+            <label>
+              <input type="checkbox" checked={sanctions} onChange={(e) => setSanctions(e.target.checked)} /> Sanctioned
+            </label>
+            <label>
+              Risk Tier:{" "}
+              <input type="number" value={riskTier} min={0} max={5} onChange={(e) => setRiskTier(+e.target.value)} />
+            </label>
+            <label>
+              Current Exposure: <input type="number" value={exposure} onChange={(e) => setExposure(+e.target.value)} />
+            </label>
+            <button onClick={requestAttestation}>Request Attester Signature</button>
+          </div>
 
-      <div className="log">
-        <h3>Log</h3>
-        {log.map((l, i) => (
-          <div key={i}>{l}</div>
-        ))}
-      </div>
+          <div className="form-group">
+            <h3>2. Eligibility Check</h3>
+            <label>
+              Policy ID: <input type="number" value={policyId} onChange={(e) => setPolicyId(+e.target.value)} />
+              <small style={{ marginLeft: "0.5rem", color: "var(--text-muted)" }}>Default demo policy: 0</small>
+            </label>
+            <label>
+              Recipient:{" "}
+              <input type="text" value={recipient} placeholder="0x..." onChange={(e) => setRecipient(e.target.value)} />
+            </label>
+            <small style={{ color: "var(--text-muted)" }}>Use any Sepolia address for the demo recipient.</small>
+            <label>
+              Transfer Amount:{" "}
+              <input type="number" value={transferAmount} onChange={(e) => setTransferAmount(+e.target.value)} />
+            </label>
+            <button onClick={createCheck} disabled={!signer}>
+              Check Eligibility
+            </button>
+          </div>
+
+          <div className="form-group">
+            <h3>3. Decryption & Transfer</h3>
+            <p>Check ID: {checkId ? <code>{checkId.slice(0, 18)}...</code> : "—"}</p>
+            <button onClick={requestDecryption} disabled={!checkId}>
+              Request Decryption
+            </button>
+            {eligible !== null && <p>Eligible: {eligible ? "✅ Yes" : "❌ No"}</p>}
+            <button onClick={executeTransfer} disabled={!checkId}>
+              Execute Transfer
+            </button>
+            <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.75rem" }}>
+              Transfer enforcement uses encrypted eligibility via FHE.select — the public decrypt result is for UI
+              visibility only.
+            </p>
+          </div>
+        </>
+      )}
+
+      {signer && log.length > 0 && (
+        <div className="log">
+          <h3>Activity Log</h3>
+          {log.map((l, i) => (
+            <div key={i}>{l}</div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

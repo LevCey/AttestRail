@@ -69,10 +69,22 @@ export default function App() {
       </header>
 
       <main>
-        {page === "overview" && <Overview addresses={ADDRESSES} account={account} network={network} />}
-        {page === "investor" && <Investor signer={signer} addresses={ADDRESSES} account={account} />}
-        {page === "issuer" && <Issuer signer={signer} addresses={ADDRESSES} account={account} />}
-        {page === "compliance" && <Compliance signer={signer} addresses={ADDRESSES} account={account} />}
+        {page === "overview" && (
+          <Overview
+            addresses={ADDRESSES}
+            account={account}
+            network={network}
+            onConnect={connect}
+            onNavigate={(p) => setPage(p as Page)}
+          />
+        )}
+        {page === "investor" && (
+          <Investor signer={signer} addresses={ADDRESSES} account={account} onConnect={connect} />
+        )}
+        {page === "issuer" && <Issuer signer={signer} addresses={ADDRESSES} account={account} onConnect={connect} />}
+        {page === "compliance" && (
+          <Compliance signer={signer} addresses={ADDRESSES} account={account} onConnect={connect} />
+        )}
       </main>
     </div>
   );
