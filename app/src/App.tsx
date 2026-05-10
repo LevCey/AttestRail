@@ -15,7 +15,7 @@ const ADDRESSES = {
   policy: import.meta.env.VITE_POLICY || "",
   gate: import.meta.env.VITE_GATE || "",
   token: import.meta.env.VITE_TOKEN || "",
-  attesterUrl: import.meta.env.VITE_ATTESTER_URL || "http://localhost:3001",
+  attesterUrl: import.meta.env.VITE_ATTESTER_URL || "https://api.attestrail.com",
 };
 
 export default function App() {
