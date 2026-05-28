@@ -2,6 +2,9 @@
 
 Confidential compliance attestations for institutional onchain finance.
 
+**Zama Builder Track Winner.** AttestRail was selected as a Zama Builder Track winner for its FHE-native compliance
+gating MVP.
+
 AttestRail is a privacy-preserving compliance layer that lets RWA platforms, stablecoin issuers, and regulated DeFi
 applications enforce eligibility, risk, and exposure rules over encrypted state. Per-user compliance attributes, issuer
 policy thresholds, and an issuer-wide aggregate all stay encrypted. Only the final eligibility bit is publicly
@@ -11,8 +14,12 @@ Built on [Zama FHEVM](https://github.com/zama-ai/fhevm-hardhat-template).
 
 ## Status
 
-**Builder Track MVP complete.** 5 contracts deployed to Sepolia, 25 passing tests, mock attester service, frontend demo
-scaffold.
+**Zama Builder Track winner.** Builder Track MVP complete: 5 contracts deployed to Sepolia, 25 passing tests, mock
+attester service, frontend demo scaffold.
+
+- [Winner announcement](https://x.com/dcjanio/status/2059961504242270240)
+- [Project announcement](https://x.com/LeventLabsHQ/status/2060042237048676548)
+- [Launch thread](https://x.com/LeventLabsHQ/status/2060041311525150792)
 
 ### Sepolia Deployment (Chain ID: 11155111)
 
