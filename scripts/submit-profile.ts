@@ -26,7 +26,7 @@ async function main() {
 
   // Compute digest
   const digest = ethers.keccak256(ethers.concat(encrypted.handles));
-  const expiry = Math.floor(Date.now() / 1000) + 86400; // 24h
+  const expiry = Math.floor(Date.now() / 1000) + 30 * 86400; // 30 days — must cover the demo/review window
   const nonce = BigInt(ethers.hexlify(ethers.randomBytes(32)));
 
   // Sign attestation (deployer is also attester in this setup)

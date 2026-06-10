@@ -16,7 +16,8 @@ import "./tasks/FHECounter";
 
 const MNEMONIC: string = vars.get("MNEMONIC", "test test test test test test test test test test test junk");
 const INFURA_API_KEY: string = vars.get("INFURA_API_KEY", "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
-const SEPOLIA_RPC_URL: string = vars.get("SEPOLIA_RPC_URL", `https://sepolia.infura.io/v3/${INFURA_API_KEY}`);
+const SEPOLIA_RPC_URL: string =
+  process.env.SEPOLIA_RPC_URL || vars.get("SEPOLIA_RPC_URL", `https://sepolia.infura.io/v3/${INFURA_API_KEY}`);
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
