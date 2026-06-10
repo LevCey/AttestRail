@@ -18,7 +18,6 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
   const [recipient, setRecipient] = useState("");
   const [policyId, setPolicyId] = useState(0);
   const [checkId, setCheckId] = useState("");
-  const [eligible, setEligible] = useState<boolean | null>(null);
   const [log, setLog] = useState<string[]>([]);
 
   function addLog(msg: string) {
@@ -44,7 +43,15 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
         }),
       });
       const data = await res.json();
-      addLog(`Attester response: ${JSON.stringify(data).slice(0, 200)}...`);
+      if (data.mode === "encrypt-first") {
+        addLog(`✓ Attester is live — EIP-712 signer ready (${data.attester ? String(data.attester).slice(0, 10) + "..." : "ok"}).`);
+        addLog(
+          "Fresh-profile onboarding runs through the attester service, which encrypts attributes before signing. " +
+            "This demo uses a pre-provisioned investor profile — continue with step 2 below.",
+        );
+      } else {
+        addLog(`Attester response: ${JSON.stringify(data).slice(0, 200)}...`);
+      }
     } catch (e) {
       addLog(`Error: ${(e as Error).message}`);
     }
@@ -68,6 +75,10 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
         (l: { fragment?: { name: string } }) => l.fragment?.name === "EligibilityCheckCreated",
       );
       const id = event?.args?.[0];
+      if (!id) {
+        addLog("Error: EligibilityCheckCreated event not found in the receipt. Check that your wallet is on Sepolia.");
+        return;
+      }
       setCheckId(id);
       addLog(`Check created: ${id}`);
     } catch (e) {
@@ -86,20 +97,15 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
       );
       const tx = await gate.requestPublicDecryption(checkId);
       await tx.wait();
-      addLog("✓ Public decryption tx confirmed. Reading result...");
+      addLog("✓ Public decryption requested — the eligible bit is now publicly decryptable.");
 
-      // Read the eligible handle and display status
       const handle = await gate.getEncryptedEligible(checkId);
       if (handle && handle !== ethers.ZeroHash) {
-        addLog(`Eligible handle: ${String(handle).slice(0, 18)}...`);
-        addLog("Note: Off-chain decryption requires Zama Relayer SDK (fhevm.publicDecryptEbool).");
-        addLog("On-chain enforcement via FHE.select does NOT depend on this read.");
-        // In production with Relayer SDK: const result = await fhevm.publicDecryptEbool(handle);
-        setEligible(true); // Assume eligible for demo if tx succeeded without revert
+        addLog(`Eligible handle: ${String(handle).slice(0, 18)}... (readable via Zama Relayer SDK)`);
+        addLog("On-chain enforcement via FHE.select does NOT depend on this read — proceed to Execute Transfer.");
       }
     } catch (e) {
       addLog(`Error: ${(e as Error).message}`);
-      setEligible(false);
     }
   }
 
@@ -206,7 +212,6 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
             <button onClick={requestDecryption} disabled={!checkId}>
               Request Decryption
             </button>
-            {eligible !== null && <p>Eligible: {eligible ? "✅ Yes" : "❌ No"}</p>}
             <button onClick={executeTransfer} disabled={!checkId}>
               Execute Transfer
             </button>

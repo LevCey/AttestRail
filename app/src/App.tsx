@@ -8,6 +8,9 @@ import "./App.css";
 
 type Page = "overview" | "investor" | "issuer" | "compliance";
 
+const SEPOLIA_CHAIN_ID = 11155111n;
+const SEPOLIA_CHAIN_HEX = "0xaa36a7";
+
 // Contract addresses — set via env or hardcoded for demo
 const ADDRESSES = {
   attesterRegistry: import.meta.env.VITE_ATTESTER_REGISTRY || "",
@@ -29,13 +32,47 @@ export default function App() {
       alert("Please install MetaMask");
       return;
     }
-    const provider = new BrowserProvider(window.ethereum);
+    let provider = new BrowserProvider(window.ethereum);
+    let net = await provider.getNetwork();
+    if (net.chainId !== SEPOLIA_CHAIN_ID) {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: SEPOLIA_CHAIN_HEX }],
+        });
+      } catch (e) {
+        // 4902: chain not added to the wallet yet
+        if ((e as { code?: number }).code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: SEPOLIA_CHAIN_HEX,
+                chainName: "Sepolia",
+                nativeCurrency: { name: "Sepolia ETH", symbol: "ETH", decimals: 18 },
+                rpcUrls: ["https://ethereum-sepolia-rpc.publicnode.com"],
+                blockExplorerUrls: ["https://sepolia.etherscan.io"],
+              },
+            ],
+          });
+        } else {
+          alert("This demo runs on Sepolia testnet. Please switch networks in your wallet to continue.");
+          return;
+        }
+      }
+      provider = new BrowserProvider(window.ethereum);
+      net = await provider.getNetwork();
+      if (net.chainId !== SEPOLIA_CHAIN_ID) {
+        alert("This demo runs on Sepolia testnet. Please switch networks in your wallet to continue.");
+        return;
+      }
+    }
     const s = await provider.getSigner();
     const addr = await s.getAddress();
-    const net = await provider.getNetwork();
     setSigner(s);
     setAccount(addr);
-    setNetwork(net.name === "unknown" ? `Chain ${net.chainId}` : net.name);
+    setNetwork("sepolia");
+    window.ethereum.on("chainChanged", () => window.location.reload());
   }
 
   return (
