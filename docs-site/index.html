@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation · AttestRail Docs</title>
+<style>
+:root { --bg:#fafaf7; --bg-soft:#f3f1ea; --fg:#0a0a0a; --fg2:#1c1917; --muted:#525252;
+        --border:#d8d4c7; --border-soft:#e6e2d6; --accent:#b45309; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); line-height:1.65;
+       font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+.top { position:sticky; top:0; background:rgba(250,250,247,.9); backdrop-filter:blur(8px);
+       border-bottom:1px solid var(--border-soft); }
+.top-inner { max-width:920px; margin:0 auto; padding:.8rem 1.5rem; display:flex; gap:1.4rem; align-items:center; }
+.brand { font-weight:600; color:var(--fg); text-decoration:none; }
+.brand span { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:.5rem;
+              background:linear-gradient(135deg,var(--fg),var(--accent)); vertical-align:baseline; }
+.top a { color:var(--muted); text-decoration:none; font-size:.92rem; }
+.top a:hover, .top a.active { color:var(--fg); }
+.top .ext { margin-left:auto; }
+main { max-width:920px; margin:0 auto; padding:2.5rem 1.5rem 4rem; }
+h1 { font-size:2rem; letter-spacing:-.02em; line-height:1.15; }
+h2 { font-size:1.4rem; margin-top:2.2rem; padding-top:1rem; border-top:1px solid var(--border-soft); }
+h3 { font-size:1.1rem; margin-top:1.6rem; }
+a { color:var(--accent); }
+code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9em;
+       background:var(--bg-soft); border:1px solid var(--border-soft); border-radius:4px; padding:.08em .35em; }
+pre { background:#16140f; color:#ece9e2; border-radius:8px; padding:1rem 1.2rem; overflow-x:auto; }
+pre code { background:none; border:0; color:inherit; font-size:.85rem; }
+table { border-collapse:collapse; width:100%; margin:1rem 0; font-size:.93rem; }
+th, td { text-align:left; padding:.5rem .6rem; border-bottom:1px solid var(--border-soft); }
+th { color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); }
+blockquote { border-left:3px solid var(--accent); margin:1rem 0; padding:.2rem 0 .2rem 1rem; color:var(--muted); }
+.footer { max-width:920px; margin:0 auto; padding:1.5rem; color:var(--muted); font-size:.85rem;
+          border-top:1px solid var(--border-soft); }
+</style>
+</head><body>
+<div class="top"><div class="top-inner">
+  <a class="brand" href="./index.html"><span></span>AttestRail Docs</a>
+  <a href="./architecture.html">Architecture</a>
+  <a href="./demo-flow.html">Demo Flow</a>
+  <span class="ext">
+    <a href="https://attestrail.com">attestrail.com</a> ·
+    <a href="https://demo.attestrail.com">Demo</a> ·
+    <a href="https://github.com/LevCey/AttestRail">GitHub</a>
+  </span>
+</div></div>
+<main>
+<h1>AttestRail Documentation</h1>
+<p>Confidential compliance layer for institutional onchain finance, built on
+<a href="https://www.zama.org">Zama FHEVM</a>. Eligibility checks, policy thresholds, and
+token balances stay encrypted on-chain; transfer enforcement is FHE-native via <code>FHE.select</code>.</p>
+<h2>Contents</h2>
+<ul>
+  <li><a href="./architecture.html">Architecture</a> — system overview, FHE type map, ACL wiring, spike findings, measured Sepolia latency.</li>
+  <li><a href="./demo-flow.html">Demo Flow</a> — step-by-step demo scenarios with test references.</li>
+</ul>
+<h2>Quick links</h2>
+<ul>
+  <li>Live demo: <a href="https://demo.attestrail.com">demo.attestrail.com</a></li>
+  <li>Demo video (3 min): <a href="https://youtu.be/qB6nFvXlBlc">youtu.be/qB6nFvXlBlc</a></li>
+  <li>Repository: <a href="https://github.com/LevCey/AttestRail">github.com/LevCey/AttestRail</a></li>
+</ul></main>
+<div class="footer">AttestRail by LeventLabs · Built on Zama FHEVM · Winner, Zama Developer Program Mainnet Season 2 · Sepolia testnet, unaudited.</div>
+</body></html>

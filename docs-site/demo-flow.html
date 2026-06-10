@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo Flow · AttestRail Docs</title>
+<style>
+:root { --bg:#fafaf7; --bg-soft:#f3f1ea; --fg:#0a0a0a; --fg2:#1c1917; --muted:#525252;
+        --border:#d8d4c7; --border-soft:#e6e2d6; --accent:#b45309; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); line-height:1.65;
+       font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+.top { position:sticky; top:0; background:rgba(250,250,247,.9); backdrop-filter:blur(8px);
+       border-bottom:1px solid var(--border-soft); }
+.top-inner { max-width:920px; margin:0 auto; padding:.8rem 1.5rem; display:flex; gap:1.4rem; align-items:center; }
+.brand { font-weight:600; color:var(--fg); text-decoration:none; }
+.brand span { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:.5rem;
+              background:linear-gradient(135deg,var(--fg),var(--accent)); vertical-align:baseline; }
+.top a { color:var(--muted); text-decoration:none; font-size:.92rem; }
+.top a:hover, .top a.active { color:var(--fg); }
+.top .ext { margin-left:auto; }
+main { max-width:920px; margin:0 auto; padding:2.5rem 1.5rem 4rem; }
+h1 { font-size:2rem; letter-spacing:-.02em; line-height:1.15; }
+h2 { font-size:1.4rem; margin-top:2.2rem; padding-top:1rem; border-top:1px solid var(--border-soft); }
+h3 { font-size:1.1rem; margin-top:1.6rem; }
+a { color:var(--accent); }
+code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9em;
+       background:var(--bg-soft); border:1px solid var(--border-soft); border-radius:4px; padding:.08em .35em; }
+pre { background:#16140f; color:#ece9e2; border-radius:8px; padding:1rem 1.2rem; overflow-x:auto; }
+pre code { background:none; border:0; color:inherit; font-size:.85rem; }
+table { border-collapse:collapse; width:100%; margin:1rem 0; font-size:.93rem; }
+th, td { text-align:left; padding:.5rem .6rem; border-bottom:1px solid var(--border-soft); }
+th { color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); }
+blockquote { border-left:3px solid var(--accent); margin:1rem 0; padding:.2rem 0 .2rem 1rem; color:var(--muted); }
+.footer { max-width:920px; margin:0 auto; padding:1.5rem; color:var(--muted); font-size:.85rem;
+          border-top:1px solid var(--border-soft); }
+</style>
+</head><body>
+<div class="top"><div class="top-inner">
+  <a class="brand" href="./index.html"><span></span>AttestRail Docs</a>
+  <a href="./architecture.html">Architecture</a>
+  <a href="./demo-flow.html" class="active">Demo Flow</a>
+  <span class="ext">
+    <a href="https://attestrail.com">attestrail.com</a> ·
+    <a href="https://demo.attestrail.com">Demo</a> ·
+    <a href="https://github.com/LevCey/AttestRail">GitHub</a>
+  </span>
+</div></div>
+<main><h1>Demo Flow — AttestRail MVP</h1>
+<h2>Prerequisites</h2>
+<pre><code class="language-bash">npm install
+npx hardhat compile
+</code></pre>
+<h2>Scenario 1: Eligible Investor</h2>
+<h3>1. Deploy contracts</h3>
+<pre><code class="language-bash">npx hardhat run scripts/deploy.ts --network hardhat
+</code></pre>
+<h3>2. Seed default policy</h3>
+<pre><code class="language-bash">npx hardhat run scripts/seed.ts --network hardhat
+</code></pre>
+<h3>3. Start mock attester</h3>
+<pre><code class="language-bash">ATTESTER_PRIVATE_KEY=&lt;key&gt; REGISTRY_ADDRESS=&lt;addr&gt; npx ts-node attester/service.ts
+</code></pre>
+<h3>4. Run the eligible path</h3>
+<p>The investor has: KYC ✅, jurisdiction ✅, not sanctioned, riskTier=1, exposure=5000. Transfer: 10,000 tokens to
+recipient.</p>
+<p><strong>Expected</strong>: Eligibility check passes → <code>eligible = true</code> → gated transfer moves 10,000 tokens.</p>
+<h3>5. Verify via tests</h3>
+<pre><code class="language-bash">npx hardhat test test/AttestRail.ts
+</code></pre>
+<p>Test: &quot;full flow: submit profile → create check → public decrypt → gated transfer&quot;</p>
+<h2>Scenario 2: Sanctioned Investor (Blocked)</h2>
+<p>Investor has <code>sanctionsFlag = true</code>. All other attributes are valid.</p>
+<p><strong>Expected</strong>: <code>eligible = false</code> → gated transfer is a zero-amount no-op → balances unchanged.</p>
+<p>Test: &quot;sanctioned investor → eligible=false → zero-amount transfer&quot;</p>
+<h2>Scenario 3: Aggregate Cap Exceeded (Blocked)</h2>
+<p>Issuer cap is 15,000. First check for 10,000 passes (aggregate = 10,000). Second check for 10,000 fails (20,000 &gt;
+15,000).</p>
+<p><strong>Expected</strong>: Second check <code>eligible = false</code> → aggregate unchanged.</p>
+<p>Test: &quot;aggregate + amount &gt; issuerCap → eligible=false&quot;</p>
+<h2>Scenario 4: Replay / Tamper Rejection</h2>
+<ul>
+<li><strong>Replayed nonce</strong>: <code>NonceReused</code> revert</li>
+<li><strong>Tampered handles</strong>: <code>DigestMismatch</code> revert</li>
+<li><strong>Wrong user</strong>: <code>UserMismatch</code> revert</li>
+<li><strong>Unknown signer</strong>: <code>AttesterNotApproved</code> revert</li>
+<li><strong>Double consumption</strong>: <code>CheckConsumed</code> revert</li>
+<li><strong>Param mismatch</strong>: <code>CheckParamMismatch</code> revert</li>
+</ul>
+<p>All covered by the test suite (25 passing tests).</p>
+<h2>Running All Tests</h2>
+<pre><code class="language-bash">npx hardhat test
+</code></pre>
+<p>Expected output: 25 passing, 1 pending (Sepolia-only test skipped on hardhat).</p>
+</main>
+<div class="footer">AttestRail by LeventLabs · Built on Zama FHEVM · Winner, Zama Developer Program Mainnet Season 2 · Sepolia testnet, unaudited.</div>
+</body></html>

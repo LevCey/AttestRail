@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AttestRail — Confidential compliance for institutional onchain finance · Zama Builder Track Winner</title>
+    <meta
+      name="description"
+      content="AttestRail enforces eligibility, risk, and exposure rules over fully encrypted state on Zama FHEVM. Winner, Zama Developer Program Mainnet Season 2. Live on Sepolia."
+    />
+    <meta name="color-scheme" content="light" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary">
+        <a class="brand" href="#top">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-text">AttestRail</span>
+        </a>
+        <ul class="nav-links">
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#why-fhe">Why FHE</a></li>
+          <li><a href="#erc3643">ERC-3643</a></li>
+          <li><a href="#contracts">Contracts</a></li>
+          <li><a href="https://docs.attestrail.com">Docs</a></li>
+          <li>
+            <a class="nav-cta" href="https://demo.attestrail.com">Launch Demo</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <p class="pill win">Winner · Zama Developer Program — Mainnet Season 2</p>
+        <h1>
+          Confidential compliance for institutional onchain finance.
+        </h1>
+        <p class="lede">
+          AttestRail enforces eligibility, risk, and exposure rules over fully
+          encrypted state. Investor attributes, issuer policy thresholds, and
+          an issuer-wide exposure aggregate stay encrypted on-chain — transfer
+          enforcement is FHE-native via <code>FHE.select</code>, and only the
+          final decision is ever revealed.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="https://demo.attestrail.com">Launch Demo</a>
+          <a class="btn ghost" href="#video">Watch the demo (3 min)</a>
+          <a class="btn ghost" href="https://github.com/LevCey/AttestRail" target="_blank" rel="noreferrer noopener">GitHub</a>
+        </div>
+        <div class="stats-row">
+          <div class="stat"><span class="num">5</span><span class="label">contracts live on Sepolia</span></div>
+          <div class="stat"><span class="num">25</span><span class="label">passing tests</span></div>
+          <div class="stat"><span class="num">euint64</span><span class="label">encrypted balances &amp; thresholds</span></div>
+          <div class="stat"><span class="num">FHE.select</span><span class="label">transfer gating</span></div>
+        </div>
+      </section>
+
+      <section class="section" id="quote">
+        <blockquote class="quote-card">
+          <p>
+            “AttestRail is a confidential compliance layer for tokenized RWAs:
+            eligibility checks run on encrypted data, transfers are gated by
+            FHE.select, and balances stay encrypted onchain. … This is the kind
+            of primitive that makes regulated capital comfortable moving
+            onchain.”
+          </p>
+          <cite>— Zama, Mainnet Season 2 winners announcement, May 28 2026</cite>
+        </blockquote>
+      </section>
+
+      <section class="section alt" id="video">
+        <div class="section-head">
+          <p class="section-kicker">Three-minute demo</p>
+          <h2>Encrypted eligibility, end to end, on Sepolia.</h2>
+        </div>
+        <div class="video-embed">
+          <iframe
+            src="https://www.youtube.com/embed/qB6nFvXlBlc"
+            title="AttestRail — Private RWA Eligibility Gate demo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </section>
+
+      <section class="section" id="problem">
+        <div class="section-head">
+          <p class="section-kicker">The problem</p>
+          <h2>Public chains expose too much. Regulated finance needs the opposite.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            RWA platforms, stablecoin issuers, and regulated DeFi must verify
+            investor eligibility, jurisdiction, sanctions exposure, risk tier,
+            and transaction limits. Today these checks run offchain or through
+            public allowlists — and both leak.
+          </p>
+          <ul class="bullet-list">
+            <li>Investor identity, jurisdiction, and risk are commercial signal.</li>
+            <li>Issuer exposure thresholds and aggregate utilization are commercial signal.</li>
+            <li>Even compliance standards keep eligibility data public: ONCHAINID's own docs warn — “Do NOT store sensitive information in the data field of a claim, even encrypted.”</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section alt" id="how">
+        <div class="section-head">
+          <p class="section-kicker">How it works</p>
+          <h2>Five components. One encrypted compliance flow.</h2>
+        </div>
+        <ol class="steps">
+          <li class="step">
+            <span class="step-num">1</span>
+            <h3>Approved attester signs the profile</h3>
+            <p>
+              A KYC/AML provider verifies the investor off-chain, encrypts the
+              attributes, and signs an EIP-712 attestation binding the
+              encrypted handles, expiry, and a single-use nonce to the wallet.
+            </p>
+          </li>
+          <li class="step">
+            <span class="step-num">2</span>
+            <h3>Registry verifies before storing</h3>
+            <p>
+              <code>submitProfile</code> verifies the approved signer, the
+              handle digest, expiry, and nonce — only then ingests the
+              ciphertexts. Two proof layers: Zama's input proof and the
+              attester signature.
+            </p>
+          </li>
+          <li class="step">
+            <span class="step-num">3</span>
+            <h3>Issuer sets encrypted thresholds</h3>
+            <p>
+              Per-investor exposure ceilings and the issuer-wide cap are
+              encrypted <code>euint64</code> values. The issuer can decrypt
+              its own thresholds; the market cannot.
+            </p>
+          </li>
+          <li class="step">
+            <span class="step-num">4</span>
+            <h3>Eligibility over encrypted state</h3>
+            <p>
+              The gate evaluates per-investor checks plus the issuer-wide
+              aggregate-cap check in the encrypted domain, then conditionally
+              updates the encrypted aggregate via <code>FHE.select</code> —
+              blocked checks leave it untouched, with no public branch.
+            </p>
+          </li>
+          <li class="step">
+            <span class="step-num">5</span>
+            <h3>FHE-native transfer enforcement</h3>
+            <p>
+              Token balances are encrypted <code>euint64</code>; the transfer
+              moves <code>FHE.select(eligible, amount, 0)</code>. No decryption
+              sits on the enforcement path — the public eligible bit exists
+              only for UI and compliance-officer visibility.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section" id="why-fhe">
+        <div class="section-head">
+          <p class="section-kicker">Why FHE, not ZK</p>
+          <h2>Shared, evolving state that no transfer-time prover knows.</h2>
+        </div>
+        <div class="two-col">
+          <article>
+            <h3>ZK proves what the prover knows</h3>
+            <p>
+              Zero-knowledge proofs suit static per-user claims: a credential,
+              a list inclusion, a balance the prover holds in cleartext. There
+              is always someone who knows the secret.
+            </p>
+          </article>
+          <article class="highlight">
+            <h3>FHE evaluates what no one knows</h3>
+            <p>
+              AttestRail's issuer-wide exposure aggregate evolves with every
+              investor's check. No transfer-time prover knows its value — so
+              there is nothing to prove in ZK. FHE compares and updates it
+              directly in the encrypted domain via <code>FHE.select</code>.
+            </p>
+          </article>
+        </div>
+        <p class="footnote">
+          The cap and its utilization are never published on-chain. The issuer
+          can privately audit its own aggregate; investors, counterparties,
+          and the market learn nothing.
+        </p>
+      </section>
+
+      <section class="section alt" id="erc3643">
+        <div class="section-head">
+          <p class="section-kicker">ERC-3643 · T-REX</p>
+          <h2>The eligibility leg of confidential RWA compliance.</h2>
+        </div>
+        <div class="prose">
+          <p>
+            ERC-3643 solved compliance enforcement — identity and eligibility
+            rules travel with the asset. Zama, the protocol AttestRail is
+            built on, is the confidentiality layer of the T-REX Ledger,
+            bringing encrypted settlement to the $32B+ ERC-3643 pipeline.
+            What stays exposed is the eligibility layer's data itself:
+            claims metadata, issuer policy parameters, and aggregate
+            exposure.
+          </p>
+          <p>
+            AttestRail is building the confidential <strong>eligibility</strong> module
+            for this stack: a pre-clearance compliance module — the
+            spec-correct shape, since ERC-3643's <code>canTransfer</code> path
+            is view-only and FHE operations are state-changing. Our attesters
+            map onto ONCHAINID's ClaimIssuer role; encrypted attributes
+            complement ONCHAINID claims rather than replacing them.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="contracts">
+        <div class="section-head">
+          <p class="section-kicker">Live on Sepolia</p>
+          <h2>Verified contracts, measured numbers.</h2>
+        </div>
+        <table class="contracts-table">
+          <tbody>
+            <tr><td>AttesterRegistry</td><td><a href="https://sepolia.etherscan.io/address/0xf714a62Dce395CB429E3FF310e52F40DBe2d0B3d" target="_blank" rel="noreferrer noopener"><code>0xf714…0B3d</code></a></td></tr>
+            <tr><td>AttestRailRegistry</td><td><a href="https://sepolia.etherscan.io/address/0x7275f7FBa4Fa3049054302C27E52F68A34a69000" target="_blank" rel="noreferrer noopener"><code>0x7275…9000</code></a></td></tr>
+            <tr><td>AttestRailPolicy</td><td><a href="https://sepolia.etherscan.io/address/0xc3F4D70068D7057AD253bB88e4E18e1d69f26A4D" target="_blank" rel="noreferrer noopener"><code>0xc3F4…6A4D</code></a></td></tr>
+            <tr><td>PrivateEligibilityGate</td><td><a href="https://sepolia.etherscan.io/address/0x803Fc2767028b2fA9B117BE802F1333818D9929d" target="_blank" rel="noreferrer noopener"><code>0x803F…929d</code></a></td></tr>
+            <tr><td>MockRWAToken</td><td><a href="https://sepolia.etherscan.io/address/0x34EDe0ef5928b55d1F2C2CBe1aB71dbd1c6cA3E3" target="_blank" rel="noreferrer noopener"><code>0x34ED…A3E3</code></a></td></tr>
+          </tbody>
+        </table>
+        <p class="footnote">
+          25 passing tests across eligible, blocked (sanctions / per-investor
+          cap / aggregate cap), trust-layer rejection, and selective-disclosure
+          paths. Measured end-to-end latency on Sepolia: ~48s median across the
+          full three-transaction demo flow — the decryption step is UI-only,
+          enforcement needs two transactions. Testnet deployment; contracts are
+          unaudited.
+        </p>
+      </section>
+
+      <section class="section alt" id="roadmap">
+        <div class="section-head">
+          <p class="section-kicker">Roadmap</p>
+          <h2>Where this goes next.</h2>
+        </div>
+        <div class="roadmap">
+          <article class="roadmap-col">
+            <h3>Shipped</h3>
+            <ul>
+              <li>Zama Mainnet Season 2 — Builder Track winner</li>
+              <li>5 contracts live on Sepolia, 25 passing tests</li>
+              <li>EIP-712 attester trust layer</li>
+              <li>Encrypted thresholds + issuer-wide aggregate cap</li>
+              <li>FHE-native transfer enforcement</li>
+            </ul>
+          </article>
+          <article class="roadmap-col">
+            <h3>In progress</h3>
+            <ul>
+              <li>ERC-3643 compliance-module reference implementation</li>
+              <li>T-REX ecosystem &amp; AppStore application</li>
+              <li>Attester-side encryption for fresh-wallet onboarding</li>
+              <li>Public eligible-bit read endpoint</li>
+            </ul>
+          </article>
+          <article class="roadmap-col">
+            <h3>Next</h3>
+            <ul>
+              <li>Multi-issuer shared exposure caps</li>
+              <li>Real attester integrations (regulated KYC/AML providers)</li>
+              <li>Security audit</li>
+              <li>Design-partner pilots</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="cta">
+        <div class="cta-box">
+          <h2>Building confidential compliance on Zama.</h2>
+          <p>
+            RWA issuer, transfer agent, or fund administrator exploring
+            confidential eligibility? We are starting design-partner
+            conversations.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="mailto:levent@leventlabs.com">Talk to us</a>
+            <a class="btn ghost" href="https://demo.attestrail.com">Launch Demo</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div>
+          <p class="footer-brand">AttestRail</p>
+          <p class="footer-muted">By LeventLabs.</p>
+        </div>
+        <div class="footer-links">
+          <a href="https://demo.attestrail.com">Demo</a>
+          <a href="https://docs.attestrail.com">Docs</a>
+          <a href="https://github.com/LevCey/AttestRail" target="_blank" rel="noreferrer noopener">GitHub</a>
+          <a href="https://x.com/LeventLabsHQ" target="_blank" rel="noreferrer noopener">X</a>
+        </div>
+        <p class="footer-muted small">
+          Sepolia testnet deployment — contracts are unaudited. Built on Zama
+          FHEVM. Winner, Zama Developer Program Mainnet Season 2 (Builder
+          Track).
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
