@@ -26,7 +26,7 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
 
   async function requestAttestation() {
     if (!signer) return;
-    addLog("Requesting attestation from mock attester...");
+    addLog("Requesting attestation from attester service...");
     try {
       const res = await fetch(`${addresses.attesterUrl}/attest`, {
         method: "POST",
@@ -116,7 +116,7 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
       const token = new ethers.Contract(addresses.token, ["function gatedTransfer(address,uint64,bytes32)"], signer);
       const tx = await token.gatedTransfer(recipient, transferAmount, checkId);
       await tx.wait();
-      addLog("Transfer executed. If eligible, tokens moved. If not, zero-amount no-op.");
+      addLog("Transfer executed — amount applied via FHE.select.");
     } catch (e) {
       addLog(`Error: ${(e as Error).message}`);
     }
@@ -145,7 +145,7 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
             Connect a wallet to start the investor flow
           </h3>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", margin: "0.5rem 0 1rem" }}>
-            Use a Sepolia wallet to request a mock attestation, submit an encrypted compliance profile, create an
+            Use a Sepolia wallet to request an attestation, submit an encrypted compliance profile, create an
             eligibility check, and execute an FHE-gated transfer.
           </p>
           {onConnect && <button onClick={onConnect}>Connect Wallet</button>}
@@ -165,7 +165,10 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
       {signer && (
         <>
           <div className="form-group">
-            <h3>1. Demo Attributes</h3>
+            <h3>1. Investor Attributes</h3>
+            <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0.25rem 0 0.75rem" }}>
+              In production these are verified and signed by the attester — editable here for demo purposes.
+            </p>
             <label>
               <input type="checkbox" checked={kyc} onChange={(e) => setKyc(e.target.checked)} /> KYC Verified
             </label>
