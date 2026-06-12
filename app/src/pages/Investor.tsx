@@ -44,7 +44,9 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
       });
       const data = await res.json();
       if (data.mode === "encrypt-first") {
-        addLog(`✓ Attester is live — EIP-712 signer ready (${data.attester ? String(data.attester).slice(0, 10) + "..." : "ok"}).`);
+        addLog(
+          `✓ Attester is live — EIP-712 signer ready (${data.attester ? String(data.attester).slice(0, 10) + "..." : "ok"}).`,
+        );
         addLog(
           "Fresh-profile onboarding runs through the attester service, which encrypts attributes before signing. " +
             "This demo uses a pre-provisioned investor profile — continue with step 2 below.",
