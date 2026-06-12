@@ -348,8 +348,9 @@ ol li strong {
   padding: 1rem;
   border-radius: var(--radius-sm);
   font-family: "JetBrains Mono", monospace;
-  font-size: 0.75rem;
-  max-height: 250px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  max-height: 300px;
   overflow-y: auto;
   color: var(--success);
   margin-top: 1rem;
@@ -357,15 +358,64 @@ ol li strong {
 
 .log h3 {
   color: var(--text-muted);
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   padding: 0;
   border: none;
   font-size: 0.75rem;
 }
 
 .log div {
-  padding: 0.2rem 0;
+  padding: 0.25rem 0;
   border-bottom: 1px solid rgba(45, 55, 72, 0.5);
+}
+
+.log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: -1rem;
+  background: var(--bg-secondary);
+  margin: -1rem -1rem 0.5rem;
+  padding: 0.75rem 1rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-clear {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.log-clear:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.log-line.ok {
+  color: var(--success);
+}
+
+.log-line.key {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.log-line.err {
+  color: #f87171;
+}
+
+.log-line.info {
+  color: var(--text-secondary);
+}
+
+.log-time {
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 /* ── Responsive ── */

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { JsonRpcSigner, ethers } from "ethers";
 
 interface Props {
@@ -18,10 +18,23 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
   const [recipient, setRecipient] = useState("");
   const [policyId, setPolicyId] = useState(0);
   const [checkId, setCheckId] = useState("");
-  const [log, setLog] = useState<string[]>([]);
+  const [log, setLog] = useState<{ time: string; text: string }[]>([]);
+  const logRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+  }, [log]);
 
   function addLog(msg: string) {
-    setLog((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+    setLog((prev) => [...prev, { time: new Date().toLocaleTimeString(), text: msg }]);
+  }
+
+  // Visual weight per line, keyed off message content only — no call-site changes.
+  function logKind(text: string): string {
+    if (text.startsWith("Error")) return "err";
+    if (text.startsWith("✓")) return "ok";
+    if (text.includes("Check created:") || text.includes("Transfer executed")) return "key";
+    return "info";
   }
 
   async function requestAttestation() {
@@ -229,10 +242,17 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
       )}
 
       {signer && log.length > 0 && (
-        <div className="log">
-          <h3>Activity Log</h3>
+        <div className="log" ref={logRef}>
+          <div className="log-head">
+            <h3>Activity Log</h3>
+            <button className="log-clear" onClick={() => setLog([])}>
+              Clear
+            </button>
+          </div>
           {log.map((l, i) => (
-            <div key={i}>{l}</div>
+            <div key={i} className={`log-line ${logKind(l.text)}`}>
+              <span className="log-time">[{l.time}]</span> {l.text}
+            </div>
           ))}
         </div>
       )}
