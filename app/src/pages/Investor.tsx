@@ -18,6 +18,7 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
   const [recipient, setRecipient] = useState("");
   const [policyId, setPolicyId] = useState(0);
   const [checkId, setCheckId] = useState("");
+  const [eligible, setEligible] = useState<boolean | null>(null);
   const [log, setLog] = useState<{ time: string; text: string }[]>([]);
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -95,29 +96,47 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
         return;
       }
       setCheckId(id);
+      setEligible(null);
       addLog(`Check created: ${id}`);
     } catch (e) {
       addLog(`Error: ${(e as Error).message}`);
     }
   }
 
+  // Polls the attester's /eligible endpoint, which public-decrypts the bit.
+  // Retries because the KMS round-trip can lag a few seconds behind the tx.
+  async function fetchEligible(id: string): Promise<boolean | null> {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const res = await fetch(`${addresses.attesterUrl}/eligible/${id}`);
+        const data = await res.json();
+        if (data.status === "decryptable" && typeof data.eligible === "boolean") return data.eligible;
+      } catch {
+        // network hiccup — fall through to retry
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    return null;
+  }
+
   async function requestDecryption() {
     if (!signer || !checkId || !addresses.gate) return;
+    setEligible(null);
     addLog("Requesting public decryption...");
     try {
-      const gate = new ethers.Contract(
-        addresses.gate,
-        ["function requestPublicDecryption(bytes32)", "function getEncryptedEligible(bytes32) view returns (bytes32)"],
-        signer,
-      );
+      const gate = new ethers.Contract(addresses.gate, ["function requestPublicDecryption(bytes32)"], signer);
       const tx = await gate.requestPublicDecryption(checkId);
       await tx.wait();
-      addLog("✓ Public decryption requested — the eligible bit is now publicly decryptable.");
+      addLog("✓ Public decryption requested — reading the decrypted result...");
 
-      const handle = await gate.getEncryptedEligible(checkId);
-      if (handle && handle !== ethers.ZeroHash) {
-        addLog(`Eligible handle: ${String(handle).slice(0, 18)}... (readable via Zama Relayer SDK)`);
-        addLog("On-chain enforcement via FHE.select does NOT depend on this read — proceed to Execute Transfer.");
+      const result = await fetchEligible(checkId);
+      if (result === null) {
+        addLog("Result not ready yet — note: on-chain enforcement via FHE.select does NOT depend on this read.");
+      } else {
+        setEligible(result);
+        addLog(
+          result ? "✓ Eligible — the transfer is authorized." : "Blocked — the transfer will be a zero-amount no-op.",
+        );
       }
     } catch (e) {
       addLog(`Error: ${(e as Error).message}`);
@@ -227,6 +246,9 @@ export function Investor({ signer, addresses, account, onConnect }: Props) {
           <div className="form-group">
             <h3>3. Decryption & Transfer</h3>
             <p>Check ID: {checkId ? <code>{checkId.slice(0, 18)}...</code> : "—"}</p>
+            {eligible !== null && (
+              <p className={`eligible-badge ${eligible ? "yes" : "no"}`}>{eligible ? "✓ Eligible" : "✗ Blocked"}</p>
+            )}
             <button onClick={requestDecryption} disabled={!checkId}>
               Request Decryption
             </button>

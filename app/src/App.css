@@ -341,6 +341,28 @@ ol li strong {
   color: var(--text-primary);
 }
 
+/* ── Eligible badge ── */
+.eligible-badge {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-sm);
+  margin: 0.25rem 0 0.75rem;
+}
+
+.eligible-badge.yes {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.4);
+}
+
+.eligible-badge.no {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+}
+
 /* ── Log ── */
 .log {
   background: var(--bg-secondary);
