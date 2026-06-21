@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Renders docs/*.md into docs-site/ as a static site for docs.attestrail.com.
+// A standalone Node (CommonJS) build tool — run with `node scripts/build-docs-site.js`.
 // Usage: node scripts/build-docs-site.js
 
 const fs = require("fs");
@@ -46,8 +48,7 @@ blockquote { border-left:3px solid var(--accent); margin:1rem 0; padding:.2rem 0
 `;
 
 function template(title, body, active) {
-  const navLink = (href, label) =>
-    `<a href="${href}"${active === href ? ' class="active"' : ""}>${label}</a>`;
+  const navLink = (href, label) => `<a href="${href}"${active === href ? ' class="active"' : ""}>${label}</a>`;
   return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
