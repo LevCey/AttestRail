@@ -14,7 +14,7 @@ Built on [Zama FHEVM](https://github.com/zama-ai/fhevm-hardhat-template).
 
 ## Status
 
-**Zama Builder Track winner.** Builder Track MVP complete: 5 contracts deployed to Sepolia, 25 passing tests, mock
+**Zama Builder Track winner.** Builder Track MVP complete: 5 contracts deployed to Sepolia, 16 passing tests, mock
 attester service, frontend demo scaffold.
 
 - [Winner announcement](https://x.com/dcjanio/status/2059961504242270240)
@@ -83,7 +83,7 @@ npm install
 # Compile
 npm run compile
 
-# Test (25 passing)
+# Test (16 passing)
 npx hardhat test
 
 # Deploy (local)
@@ -109,8 +109,7 @@ cd app && npm install && npm run dev
 | Trust layer          | 5      | Unknown signer, expired attestation, nonce replay, wrong user, digest tamper |
 | Eligibility flow     | 2      | Wrong status revert, public decrypt correctness                              |
 | Selective disclosure | 3      | Admin grant + officer decrypt, non-admin revert, unknown field               |
-| Spikes               | 9      | S1 (5 tests), S2 (1 test), FHECounter (3 tests)                              |
-| **Total**            | **25** |                                                                              |
+| **Total**            | **16** |                                                                              |
 
 ## Disclosure and Inference Exposure
 
@@ -160,13 +159,12 @@ ZK proofs verify a static claim. FHE computes over encrypted state that evolves 
 ## Project Structure
 
 ```
-contracts/          Solidity contracts (5 production + 2 spike)
-test/               Hardhat tests (25 passing)
+contracts/          Solidity contracts (5 production)
+test/               Hardhat tests (16 passing)
 attester/           Mock attester service (Node.js)
 app/                Frontend demo (Vite + React + TypeScript)
 scripts/            Deploy and seed scripts
 docs/               Architecture, demo flow
-spike/              S1 (decryption) and S2 (digest) spike findings
 ```
 
 ## License
@@ -177,4 +175,3 @@ BSD-3-Clause-Clear (see LICENSE)
 
 - [Architecture](docs/architecture.md)
 - [Demo Flow](docs/demo-flow.md)
-- [S1 Spike: Public Decryption](spike/decryption/FINDINGS.md)

@@ -131,7 +131,7 @@ contract via <code>setGateContract</code></li>
 <code>setGateContract</code></li>
 <li><strong>Gate → Token</strong>: The <code>encryptedEligible</code> handle is allowed to the token contract via <code>setTokenContract</code></li>
 </ul>
-<h2>Public Decryption Pattern (S1 Spike Finding)</h2>
+<h2>Public Decryption Pattern</h2>
 <p><strong>Flow</strong>: Helper-based, not callback/polling.</p>
 <ol>
 <li>Contract calls <code>FHE.makePubliclyDecryptable(handle)</code> — single transaction</li>
@@ -145,7 +145,7 @@ contract via <code>setGateContract</code></li>
 <li><code>FHE.allow(handle, user)</code> — NOT required for public decrypt</li>
 </ul>
 <p><strong>On-chain enforcement</strong>: <code>FHE.select(eligible, amount, 0)</code> — transfer amount gated entirely in encrypted domain.</p>
-<h2>Handle Digest Packing (S2 Spike Finding)</h2>
+<h2>Handle Digest Packing</h2>
 <pre><code>digest = keccak256(abi.encodePacked(
     externalEbool.unwrap(kyc),        // bytes32
     externalEbool.unwrap(jurisdiction), // bytes32

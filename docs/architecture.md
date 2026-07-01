@@ -60,7 +60,7 @@ FHE handles require explicit `FHE.allow(handle, address)` for each contract that
   `setGateContract`
 - **Gate → Token**: The `encryptedEligible` handle is allowed to the token contract via `setTokenContract`
 
-## Public Decryption Pattern (S1 Spike Finding)
+## Public Decryption Pattern
 
 **Flow**: Helper-based, not callback/polling.
 
@@ -76,7 +76,7 @@ FHE handles require explicit `FHE.allow(handle, address)` for each contract that
 
 **On-chain enforcement**: `FHE.select(eligible, amount, 0)` — transfer amount gated entirely in encrypted domain.
 
-## Handle Digest Packing (S2 Spike Finding)
+## Handle Digest Packing
 
 ```
 digest = keccak256(abi.encodePacked(

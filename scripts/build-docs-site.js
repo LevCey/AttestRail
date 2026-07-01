@@ -79,7 +79,7 @@ const indexBody = `
 token balances stay encrypted on-chain; transfer enforcement is FHE-native via <code>FHE.select</code>.</p>
 <h2>Contents</h2>
 <ul>
-  <li><a href="./architecture.html">Architecture</a> — system overview, FHE type map, ACL wiring, spike findings, measured Sepolia latency.</li>
+  <li><a href="./architecture.html">Architecture</a> — system overview, FHE type map, ACL wiring, measured Sepolia latency.</li>
   <li><a href="./demo-flow.html">Demo Flow</a> — step-by-step demo scenarios with test references.</li>
 </ul>
 <h2>Quick links</h2>

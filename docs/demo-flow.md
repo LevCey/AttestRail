@@ -68,7 +68,7 @@ Test: "aggregate + amount > issuerCap → eligible=false"
 - **Double consumption**: `CheckConsumed` revert
 - **Param mismatch**: `CheckParamMismatch` revert
 
-All covered by the test suite (25 passing tests).
+All covered by the test suite (16 passing tests).
 
 ## Running All Tests
 
@@ -76,4 +76,4 @@ All covered by the test suite (25 passing tests).
 npx hardhat test
 ```
 
-Expected output: 25 passing, 1 pending (Sepolia-only test skipped on hardhat).
+Expected output: 16 passing.

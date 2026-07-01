@@ -7,8 +7,7 @@ in the demo. Production deployments would replace it with a regulated provider.
 
 1. Accept a request containing the user wallet and demo attribute values.
 2. Encrypt attributes for `(AttestRailRegistry address, user address)` using the Zama Relayer SDK.
-3. Compute `handlesDigest = keccak256(packed(handle bytes))` matching the on-chain registry's expected packing (locked
-   by Spike S2).
+3. Compute `handlesDigest = keccak256(packed(handle bytes))` matching the on-chain registry's expected packing.
 4. Sign an EIP-712 `Attestation` struct using `ATTESTER_PRIVATE_KEY`. Domain MUST exactly match the registry's
    `EIP712("AttestRail", "1")` plus `chainId` and `verifyingContract = REGISTRY_ADDRESS`.
 5. Return ciphertexts, input proof, attestation, and signature in JSON.
