@@ -22,4 +22,5 @@ Contract addresses are read at build time from `../deployments/sepolia/addresses
 
 ## Status
 
-Not yet implemented. Scaffolds in Phase 6 of the build (Tasks 18–22).
+Live at [demo.attestrail.com](https://demo.attestrail.com), running against the Sepolia deployment. Read-only pages work
+without a wallet; write actions require a wallet on Sepolia.
